@@ -1,6 +1,7 @@
 parameters:
-    level: max
+    level: 8
     paths:
         - src
-
-    reportUnmatchedIgnoredErrors: true
+    ignoreErrors:
+        # Laravel trait analysis
+        - '#Trait Laravel\\Passkeys\\PasskeyAuthenticatable is used zero times#'

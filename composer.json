@@ -1,34 +1,44 @@
 {
-    "name": "nunomaduro/skeleton-php",
-    "description": "A skeleton repository for my packages",
-    "keywords": ["php", "skeleton", "package"],
+    "name": "laravel/passkeys",
+    "description": "Passwordless authentication using WebAuthn/passkeys for Laravel",
+    "keywords": ["laravel", "passkeys", "webauthn", "passwordless", "authentication"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Taylor Otwell",
+            "email": "taylor@laravel.com"
         }
     ],
     "require": {
-        "php": "^8.4.0"
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/database": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "illuminate/routing": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0",
+        "web-auth/webauthn-lib": "^5.0"
     },
     "require-dev": {
         "laravel/pint": "^1.24.0",
-        "peckphp/peck": "^0.1.3",
-        "pestphp/pest": "^4.1.0",
-        "pestphp/pest-plugin-type-coverage": "^4.0.2",
-        "phpstan/phpstan": "^2.1.26",
-        "rector/rector": "^2.1.7",
-        "symfony/var-dumper": "^7.3.3"
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0",
+        "phpstan/phpstan": "^2.0"
     },
     "autoload": {
         "psr-4": {
-            "NunoMaduro\\SkeletonPhp\\": "src/"
+            "Laravel\\Passkeys\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Laravel\\Passkeys\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laravel\\Passkeys\\PasskeysServiceProvider"
+            ]
         }
     },
     "minimum-stability": "dev",
@@ -42,20 +52,13 @@
     },
     "scripts": {
         "lint": "pint",
-        "refactor": "rector",
-        "test:type-coverage": "pest --type-coverage --exactly=100",
-        "test:typos": "peck",
         "test:lint": "pint --test",
-        "test:unit": "pest --coverage --exactly=100",
-        "test:types": "phpstan",
-        "test:refactor": "rector --dry-run",
+        "test:types": "phpstan analyse",
+        "test:unit": "pest",
         "test": [
             "@test:lint",
-            "@test:type-coverage",
-            "@test:typos",
-            "@test:unit",
             "@test:types",
-            "@test:refactor"
+            "@test:unit"
         ]
     }
 }

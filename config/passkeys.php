@@ -1,0 +1,103 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relying Party ID
+    |--------------------------------------------------------------------------
+    |
+    | The identifier for your application in the WebAuthn protocol. This is
+    | typically set to your domain (e.g., "example.com"). Passkeys are bound
+    | to this ID and can only be verified on matching domains.
+    |
+    */
+
+    'relying_party_id' => env('PASSKEY_RELYING_PARTY_ID'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | WebAuthn Timeout
+    |--------------------------------------------------------------------------
+    |
+    | The timeout in milliseconds for WebAuthn operations. This determines
+    | how long users have to complete passkey registration or verification.
+    |
+    */
+
+    'timeout' => 60000,
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Verification Requirement
+    |--------------------------------------------------------------------------
+    |
+    | Controls user verification during registration and login.
+    | Supported values: "required", "preferred", "discouraged".
+    |
+    */
+
+    'user_verification' => 'required',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Guard
+    |--------------------------------------------------------------------------
+    |
+    | The authentication guard to use when logging in users with passkeys.
+    | This should match your application's primary authentication guard.
+    |
+    */
+
+    'guard' => 'web',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Models
+    |--------------------------------------------------------------------------
+    |
+    | You can customize the model used for passkeys by specifying your own
+    | model class here. Your custom model should extend the base Passkey model.
+    |
+    */
+
+    'models' => [
+        'passkey' => Laravel\Passkeys\Passkey::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passkeys Routes Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify which middleware Passkeys will assign to the routes
+    | that it registers with the application. If necessary, you may change
+    | these middleware but typically this provided default is preferred.
+    |
+    */
+
+    'middleware' => ['web'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passkeys Throttling
+    |--------------------------------------------------------------------------
+    |
+    | Middleware used to throttle passkey endpoints. Set to null to disable.
+    |
+    */
+
+    'throttle' => 'throttle:6,1',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redirect
+    |--------------------------------------------------------------------------
+    |
+    | The path to redirect to after successful passkey verification.
+    |
+    */
+
+    'redirect' => '/dashboard',
+
+];
