@@ -21,16 +21,29 @@ Optionally publish the config file:
 php artisan vendor:publish --tag=passkeys-config
 ```
 
-## Setup
-
-Add the `PasskeyAuthenticatable` trait to your User model:
+Add the `PasskeyAuthenticatable` trait to your User model and implement the `PasskeyUser` contract:
 
 ```php
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements PasskeyUser
 {
     use PasskeyAuthenticatable;
+}
+```
+
+If you want to use custom models, override them in a service provider:
+
+```php
+use App\Models\User;
+use App\Models\Passkey;
+use Laravel\Passkeys\Passkeys;
+
+public function boot(): void
+{
+    Passkeys::useUserModel(User::class);
+    Passkeys::usePasskeyModel(Passkey::class);
 }
 ```
 
@@ -85,11 +98,6 @@ return [
 
     // Authentication guard
     'guard' => 'web',
-
-    // Custom passkey model
-    'models' => [
-        'passkey' => Laravel\Passkeys\Passkey::class,
-    ],
 
     // Routes middleware
     'middleware' => ['web'],
@@ -169,7 +177,7 @@ Available response contracts:
 
 ### Custom Passkey Model
 
-Extend the base model for custom behavior:
+Extend the base model (or implement `Laravel\Passkeys\Contracts\Passkey`):
 
 ```php
 use Laravel\Passkeys\Passkey as BasePasskey;
@@ -183,11 +191,6 @@ class Passkey extends BasePasskey
         });
     }
 }
-
-// In config/passkeys.php
-'models' => [
-    'passkey' => App\Models\Passkey::class,
-],
 ```
 
 ### Disable Routes

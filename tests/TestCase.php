@@ -6,6 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\PasskeyAuthenticatable;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\PasskeysServiceProvider;
@@ -56,7 +57,7 @@ abstract class TestCase extends BaseTestCase
     }
 }
 
-class User extends Authenticatable
+class User extends Authenticatable implements PasskeyUser
 {
     use PasskeyAuthenticatable;
 

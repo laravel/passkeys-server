@@ -56,20 +56,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Models
-    |--------------------------------------------------------------------------
-    |
-    | You can customize the model used for passkeys by specifying your own
-    | model class here. Your custom model should extend the base Passkey model.
-    |
-    */
-
-    'models' => [
-        'passkey' => Laravel\Passkeys\Passkey::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Passkeys Routes Middleware
     |--------------------------------------------------------------------------
     |

@@ -13,12 +13,15 @@ class Passkeys
     /**
      * The passkey model class name.
      *
-     * @var class-string<Passkey>
+     * @var class-string<Contracts\Passkey>
+     * @phpstan-var class-string<Passkey>
      */
     public static string $passkeyModel = Passkey::class;
 
     /**
      * The user model class name.
+     *
+     * @var class-string<Contracts\PasskeyUser>
      */
     public static string $userModel = 'App\\Models\\User';
 
@@ -80,7 +83,8 @@ class Passkeys
     /**
      * Get the passkey model class name.
      *
-     * @return class-string<Passkey>
+     * @return class-string<Contracts\Passkey>
+     * @phpstan-return class-string<Passkey>
      */
     public static function passkeyModel(): string
     {
@@ -90,7 +94,8 @@ class Passkeys
     /**
      * Set the passkey model class name.
      *
-     * @param  class-string<Passkey>  $model
+     * @param  class-string<Contracts\Passkey>  $model
+     * @phpstan-param class-string<Passkey>  $model
      */
     public static function usePasskeyModel(string $model): void
     {
@@ -99,6 +104,8 @@ class Passkeys
 
     /**
      * Get the user model class name.
+     *
+     * @return class-string<Contracts\PasskeyUser>
      */
     public static function userModel(): string
     {
@@ -107,6 +114,8 @@ class Passkeys
 
     /**
      * Set the user model class name.
+     *
+     * @param  class-string<Contracts\PasskeyUser>  $model
      */
     public static function useUserModel(string $model): void
     {

@@ -35,8 +35,6 @@ class PasskeysServiceProvider extends ServiceProvider
         $this->registerPublishing();
         $this->registerRoutes();
 
-        Passkeys::usePasskeyModel(config('passkeys.models.passkey'));
-
         Route::model('passkey', Passkeys::passkeyModel());
     }
 

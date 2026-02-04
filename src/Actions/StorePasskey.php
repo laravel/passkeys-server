@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Actions;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Events\PasskeyRegistered;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Passkey;
@@ -30,6 +31,10 @@ class StorePasskey
         PublicKeyCredential $credential,
         PublicKeyCredentialCreationOptions $options
     ): Passkey {
+        if (! $user instanceof PasskeyUser) {
+            throw new RuntimeException('User model must implement the PasskeyUser contract.');
+        }
+
         $response = $this->getResponse($credential);
 
         $source = $this->validate($response, $options);
@@ -91,14 +96,10 @@ class StorePasskey
      * Create the passkey record for the user.
      */
     protected function createPasskey(
-        Authenticatable $user,
+        PasskeyUser $user,
         string $name,
         PublicKeyCredentialSource $source
     ): Passkey {
-        if (! method_exists($user, 'passkeys')) {
-            throw new RuntimeException('User model must use the PasskeyAuthenticatable trait.');
-        }
-
         $credentialId = Base64UrlSafe::encodeUnpadded($source->publicKeyCredentialId);
 
         return $user->passkeys()->create([

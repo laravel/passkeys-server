@@ -6,6 +6,7 @@ namespace Laravel\Passkeys\Actions;
 
 use Cose\Algorithms;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkeys;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use RuntimeException;
@@ -23,6 +24,10 @@ class GenerateRegistrationOptions
      */
     public function __invoke(Authenticatable $user): PublicKeyCredentialCreationOptions
     {
+        if (! $user instanceof PasskeyUser) {
+            throw new RuntimeException('User model must implement the PasskeyUser contract.');
+        }
+
         // Don't verify the authenticator's attestation certificate chain.
         $attestation = PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
 
@@ -52,14 +57,8 @@ class GenerateRegistrationOptions
     /**
      * Create the user entity for registration.
      */
-    protected function userEntity(Authenticatable $user): PublicKeyCredentialUserEntity
+    protected function userEntity(PasskeyUser $user): PublicKeyCredentialUserEntity
     {
-        if (! method_exists($user, 'getPasskeyUsername')
-            || ! method_exists($user, 'getPasskeyUserHandle')
-            || ! method_exists($user, 'getPasskeyDisplayName')) {
-            throw new RuntimeException('User model must use the PasskeyAuthenticatable trait.');
-        }
-
         return PublicKeyCredentialUserEntity::create(
             name: $user->getPasskeyUsername(),
             id: $user->getPasskeyUserHandle(),
@@ -94,12 +93,8 @@ class GenerateRegistrationOptions
      *
      * @return array<PublicKeyCredentialDescriptor>
      */
-    protected function excludedCredentials(Authenticatable $user): array
+    protected function excludedCredentials(PasskeyUser $user): array
     {
-        if (! method_exists($user, 'passkeys')) {
-            throw new RuntimeException('User model must use the PasskeyAuthenticatable trait.');
-        }
-
         $type = PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY;
 
         return $user->passkeys()->get()->map(

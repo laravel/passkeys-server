@@ -1,0 +1,13 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Trait Laravel\\Passkeys\\PasskeyAuthenticatable is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/PasskeyAuthenticatable.php
+
+		-
+			message: '#^Static property Laravel\\Passkeys\\Passkeys\:\:\$userModel \(class\-string\<Laravel\\Passkeys\\Contracts\\PasskeyUser\>\) does not accept default value of type string\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: src/Passkeys.php

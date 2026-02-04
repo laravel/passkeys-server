@@ -7,6 +7,8 @@ namespace Laravel\Passkeys;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\Aaguids;
 
 /**
@@ -20,10 +22,10 @@ use Laravel\Passkeys\Support\Aaguids;
  * @property \Illuminate\Support\Carbon|null $last_used_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Contracts\Auth\Authenticatable $user
+ * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
  */
-class Passkey extends Model
+class Passkey extends Model implements PasskeyContract
 {
     /**
      * The attributes that are mass assignable.
@@ -34,6 +36,15 @@ class Passkey extends Model
         'name',
         'credential_id',
         'credential',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'authenticator',
     ];
 
     /**
@@ -56,8 +67,10 @@ class Passkey extends Model
      */
     public function user(): BelongsTo
     {
-        /** @phpstan-ignore argument.type, argument.templateType */
-        return $this->belongsTo(Passkeys::userModel());
+        /** @var class-string<Model> $model */
+        $model = Passkeys::userModel();
+
+        return $this->belongsTo($model);
     }
 
     /**
@@ -68,7 +81,7 @@ class Passkey extends Model
         return Attribute::get(function (): ?string {
             $aaguid = $this->credential['aaguid'] ?? null;
 
-            if (! $aaguid || $aaguid === '00000000-0000-0000-0000-000000000000') {
+            if (! is_string($aaguid) || $aaguid === '00000000-0000-0000-0000-000000000000') {
                 return null;
             }
 

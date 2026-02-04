@@ -9,11 +9,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Contracts\PasskeyVerificationResponse;
 use Laravel\Passkeys\Http\Requests\PasskeyVerificationRequest;
 use Laravel\Passkeys\Support\WebAuthn;
+use RuntimeException;
 
 class PasskeyVerificationController extends Controller
 {
@@ -45,8 +47,11 @@ class PasskeyVerificationController extends Controller
             $request->verificationOptions()
         );
 
-        /** @var StatefulGuard $guard */
-        $guard = Auth::guard(config('passkeys.guard'));
+        $guard = Auth::guard(Config::string('passkeys.guard'));
+
+        if (! $guard instanceof StatefulGuard) {
+            throw new RuntimeException('Passkeys requires a stateful authentication guard.');
+        }
 
         $guard->login($passkey->user, $request->remember());
 
