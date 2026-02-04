@@ -34,12 +34,12 @@ class PasskeyVerificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'credential' => 'required|array',
-            'credential.id' => 'required|string',
-            'credential.rawId' => 'required|string',
-            'credential.type' => 'required|string|in:public-key',
-            'credential.response' => 'required|array',
-            'remember' => 'boolean',
+            'credential' => ['required', 'array'],
+            'credential.id' => ['required', 'string'],
+            'credential.rawId' => ['required', 'string'],
+            'credential.type' => ['required', 'string', 'in:public-key'],
+            'credential.response' => ['required', 'array'],
+            'remember' => ['boolean'],
         ];
     }
 
