@@ -72,7 +72,7 @@ class Passkey extends Model
                 return null;
             }
 
-            return Aaguids::MAP[$aaguid] ?? null;
+            return Aaguids::labelFor($aaguid);
         });
     }
 }
