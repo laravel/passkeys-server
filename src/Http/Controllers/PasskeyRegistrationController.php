@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Http\Controllers;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\DeletePasskey;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
@@ -27,7 +27,7 @@ class PasskeyRegistrationController extends Controller
     public function index(Request $request, GenerateRegistrationOptions $generate): JsonResponse
     {
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
-            ?? throw new AuthenticationException();
+            ?? throw new AuthenticationException;
 
         $options = $generate($user);
 
@@ -48,7 +48,7 @@ class PasskeyRegistrationController extends Controller
         StorePasskey $storePasskey,
     ): PasskeyRegistrationResponse {
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
-            ?? throw new AuthenticationException();
+            ?? throw new AuthenticationException;
 
         $passkey = $storePasskey(
             $user,
@@ -69,7 +69,7 @@ class PasskeyRegistrationController extends Controller
         DeletePasskey $deletePasskey
     ): PasskeyDeletedResponse {
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
-            ?? throw new AuthenticationException();
+            ?? throw new AuthenticationException;
 
         abort_unless($passkey->user_id === $user->getAuthIdentifier(), 403);
 

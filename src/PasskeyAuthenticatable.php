@@ -16,6 +16,7 @@ trait PasskeyAuthenticatable
      * Get the passkeys associated with the user.
      *
      * @return HasMany<PasskeyContract, \Illuminate\Database\Eloquent\Model>
+     *
      * @phpstan-return HasMany<\Laravel\Passkeys\Passkey, \Illuminate\Database\Eloquent\Model>
      */
     public function passkeys(): HasMany
