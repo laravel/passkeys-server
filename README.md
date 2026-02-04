@@ -93,9 +93,6 @@ return [
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,
 
-    // User verification requirement: required, preferred, discouraged
-    'user_verification' => 'required',
-
     // Authentication guard
     'guard' => 'web',
 
@@ -126,6 +123,7 @@ Actions handle the core WebAuthn logic. Extend an action and bind it in your ser
 
 ```php
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
+use Webauthn\AuthenticatorSelectionCriteria;
 
 class CustomRegistrationOptions extends GenerateRegistrationOptions
 {
@@ -134,7 +132,7 @@ class CustomRegistrationOptions extends GenerateRegistrationOptions
         // Only allow platform authenticators (Touch ID, Face ID, Windows Hello)
         return AuthenticatorSelectionCriteria::create(
             authenticatorAttachment: AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_PLATFORM,
-            userVerification: Passkeys::userVerificationRequirement(),
+            userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
         );
     }

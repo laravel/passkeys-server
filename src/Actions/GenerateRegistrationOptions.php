@@ -68,6 +68,8 @@ class GenerateRegistrationOptions
 
     /**
      * Get the authenticator selection criteria.
+     *
+     * @see https://www.w3.org/TR/webauthn-3/#dictdef-authenticatorselectioncriteria
      */
     protected function authenticatorSelection(): AuthenticatorSelectionCriteria
     {
@@ -77,8 +79,8 @@ class GenerateRegistrationOptions
         // Require a discoverable credential so the user can sign in without typing a username.
         $residentKey = AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED;
 
-        // Whether the user must prove their identity (biometric, PIN) or just their presence (tap).
-        $userVerification = Passkeys::userVerificationRequirement();
+        // Require user verification (biometric, PIN) rather than just presence (tap).
+        $userVerification = AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED;
 
         return AuthenticatorSelectionCriteria::create(
             authenticatorAttachment: $crossPlatform,

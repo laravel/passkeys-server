@@ -32,18 +32,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | User Verification Requirement
-    |--------------------------------------------------------------------------
-    |
-    | Controls user verification during registration and login.
-    | Supported values: "required", "preferred", "discouraged".
-    |
-    */
-
-    'user_verification' => 'required',
-
-    /*
-    |--------------------------------------------------------------------------
     | Authentication Guard
     |--------------------------------------------------------------------------
     |

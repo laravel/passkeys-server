@@ -6,7 +6,6 @@ namespace Laravel\Passkeys;
 
 use Illuminate\Support\Facades\Config;
 use RuntimeException;
-use Webauthn\AuthenticatorSelectionCriteria;
 
 class Passkeys
 {
@@ -14,6 +13,7 @@ class Passkeys
      * The passkey model class name.
      *
      * @var class-string<Contracts\Passkey>
+     *
      * @phpstan-var class-string<Passkey>
      */
     public static string $passkeyModel = Passkey::class;
@@ -67,23 +67,10 @@ class Passkeys
     }
 
     /**
-     * Get the configured user verification requirement.
-     */
-    public static function userVerificationRequirement(): string
-    {
-        $requirement = Config::string('passkeys.user_verification', AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED);
-
-        if (in_array($requirement, AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENTS, true)) {
-            return $requirement;
-        }
-
-        return AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED;
-    }
-
-    /**
      * Get the passkey model class name.
      *
      * @return class-string<Contracts\Passkey>
+     *
      * @phpstan-return class-string<Passkey>
      */
     public static function passkeyModel(): string
@@ -95,6 +82,7 @@ class Passkeys
      * Set the passkey model class name.
      *
      * @param  class-string<Contracts\Passkey>  $model
+     *
      * @phpstan-param class-string<Passkey>  $model
      */
     public static function usePasskeyModel(string $model): void
