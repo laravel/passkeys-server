@@ -35,19 +35,20 @@ class Passkeys
      */
     public static function relyingPartyId(): string
     {
-        $rpId = Config::string('passkeys.relying_party.id');
-
-        return $rpId;
+        return Config::string('passkeys.relying_party_id');
     }
 
     /**
      * Get the relying party name.
+     *
+     * The RP name is deprecated in the WebAuthn spec as most clients don't display it,
+     * but remains required for backwards compatibility. Defaults to the RP ID.
+     *
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialentity-name
      */
     public static function relyingPartyName(): string
     {
-        $name = Config::string('passkeys.relying_party.name');
-
-        return $name;
+        return static::relyingPartyId();
     }
 
     /**

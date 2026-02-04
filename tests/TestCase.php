@@ -29,8 +29,7 @@ abstract class TestCase extends BaseTestCase
             'database' => ':memory:',
         ]);
 
-        $app['config']->set('passkeys.relying_party.id', 'localhost');
-        $app['config']->set('passkeys.relying_party.name', 'Test App');
+        $app['config']->set('passkeys.relying_party_id', 'localhost');
         $app['config']->set('auth.providers.users.model', User::class);
 
         Passkeys::useUserModel(User::class);
