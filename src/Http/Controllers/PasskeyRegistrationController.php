@@ -7,10 +7,13 @@ namespace Laravel\Passkeys\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Laravel\Passkeys\Actions\DeletePasskey;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
+use Laravel\Passkeys\Contracts\PasskeyDeletedResponse;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse;
 use Laravel\Passkeys\Http\Requests\PasskeyRegistrationRequest;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Support\WebAuthn;
 
 class PasskeyRegistrationController extends Controller
@@ -46,5 +49,22 @@ class PasskeyRegistrationController extends Controller
         );
 
         return app(PasskeyRegistrationResponse::class)->withPasskey($passkey);
+    }
+
+    /**
+     * Delete a passkey for the authenticated user.
+     */
+    public function destroy(
+        Request $request,
+        Passkey $passkey,
+        DeletePasskey $deletePasskey
+    ): PasskeyDeletedResponse {
+        $user = $request->user();
+
+        abort_unless($passkey->user_id === $user->getAuthIdentifier(), 403);
+
+        $deletePasskey($user, $passkey);
+
+        return app(PasskeyDeletedResponse::class);
     }
 }

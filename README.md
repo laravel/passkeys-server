@@ -61,7 +61,6 @@ The package automatically registers the following routes:
 - `POST /passkeys/verify` - Verify passkey and authenticate
 
 ### Authenticated Routes (Management)
-- `GET /user/passkeys` - List user's passkeys
 - `GET /user/passkeys/options` - Get registration options
 - `POST /user/passkeys` - Store new passkey
 - `DELETE /user/passkeys/{passkey}` - Delete passkey

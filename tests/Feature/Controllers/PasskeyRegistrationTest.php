@@ -2,6 +2,7 @@
 
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
+use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Tests\User;
 
 it('returns registration options for authenticated user', function () {
@@ -98,4 +99,51 @@ it('returns validation error when session has expired', function () {
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['credential']);
+});
+
+it('requires authentication to delete a passkey', function () {
+    $this->deleteJson('/user/passkeys/1')
+        ->assertUnauthorized();
+});
+
+it('deletes a passkey for the authenticated user', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlk',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson("/user/passkeys/{$passkey->id}")
+        ->assertOk()
+        ->assertJson(['status' => 'passkey-deleted']);
+
+    expect(Passkey::find($passkey->id))->toBeNull();
+});
+
+it('forbids deleting another user\'s passkey', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $otherUser = User::create([
+        'name' => 'Other User',
+        'email' => 'other@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlkLW90aGVy',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($otherUser)
+        ->deleteJson("/user/passkeys/{$passkey->id}")
+        ->assertForbidden();
 });
