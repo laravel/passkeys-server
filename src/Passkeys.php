@@ -32,22 +32,19 @@ class Passkeys
      */
     public static function relyingPartyId(): string
     {
-        /** @var string|null $rpId */
-        $rpId = config('passkeys.relying_party_id');
+        $rpId = Config::string('passkeys.relying_party.id');
 
-        if ($rpId) {
-            return $rpId;
-        }
+        return $rpId;
+    }
 
-        if (app()->environment('production')) {
-            throw new RuntimeException('PASSKEY_RELYING_PARTY_ID must be set in production.');
-        }
+    /**
+     * Get the relying party name.
+     */
+    public static function relyingPartyName(): string
+    {
+        $name = Config::string('passkeys.relying_party.name');
 
-        /** @var string|null $appUrl */
-        $appUrl = config('app.url');
-        $appUrlHost = $appUrl ? parse_url($appUrl, PHP_URL_HOST) : null;
-
-        return $appUrlHost ?: request()->getHost();
+        return $name;
     }
 
     /**

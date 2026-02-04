@@ -4,16 +4,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Relying Party ID
+    | Relying Party
     |--------------------------------------------------------------------------
     |
-    | The identifier for your application in the WebAuthn protocol. This is
-    | typically set to your domain (e.g., "example.com"). Passkeys are bound
-    | to this ID and can only be verified on matching domains.
+    | The relying party represents your application in the WebAuthn protocol.
+    | The ID is typically your domain (e.g., "example.com"). Passkeys are
+    | bound to this ID and can only be verified on matching domains.
     |
     */
 
-    'relying_party_id' => env('PASSKEY_RELYING_PARTY_ID'),
+    'relying_party' => [
+        'id' => parse_url(config('app.url'), PHP_URL_HOST),
+        'name' => config('app.name'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

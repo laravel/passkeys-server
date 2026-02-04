@@ -44,7 +44,7 @@ class GenerateRegistrationOptions
     protected function relyingParty(): PublicKeyCredentialRpEntity
     {
         return PublicKeyCredentialRpEntity::create(
-            name: config('app.name'),
+            name: Passkeys::relyingPartyName(),
             id: Passkeys::relyingPartyId(),
         );
     }

@@ -72,8 +72,11 @@ The package automatically registers the following routes:
 // config/passkeys.php
 
 return [
-    // Relying Party ID / domain (defaults to APP_URL host)
-    'relying_party_id' => env('PASSKEY_RELYING_PARTY_ID'),
+    // Relying Party (defaults to APP_URL host and app name)
+    'relying_party' => [
+        'id' => parse_url(config('app.url'), PHP_URL_HOST),
+        'name' => config('app.name'),
+    ],
 
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,
