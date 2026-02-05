@@ -39,23 +39,21 @@ trait PasskeyAuthenticatable
      */
     public function getPasskeyUserHandle(): string
     {
-        if (isset($this->passkey_user_handle) && ! empty($this->passkey_user_handle)) {
-            return $this->passkey_user_handle;
-        }
-
         return (string) $this->getKey();
     }
 
     /**
      * Get the display name for WebAuthn registration.
+     * Shown in the authenticator UI as a human-friendly name.
      */
     public function getPasskeyDisplayName(): string
     {
-        return $this->name ?? $this->email;
+        return $this->email;
     }
 
     /**
      * Get the username for WebAuthn registration.
+     * Used as the account identifier in the authenticator UI.
      */
     public function getPasskeyUsername(): string
     {
