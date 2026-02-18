@@ -51,8 +51,8 @@ class PasskeysServiceProvider extends ServiceProvider
             __DIR__.'/../config/passkeys.php' => config_path('passkeys.php'),
         ], 'passkeys-config');
 
-        $this->publishes([
-            __DIR__.'/../database/migrations/2024_01_01_000000_create_passkeys_table.php' => database_path('migrations/2024_01_01_000000_create_passkeys_table.php'),
+        $this->publishesMigrations([
+            Passkeys::migrationPath() => database_path('migrations'),
         ], 'passkeys-migrations');
     }
 

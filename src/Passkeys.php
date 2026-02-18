@@ -126,4 +126,12 @@ class Passkeys
     {
         self::$registersRoutes = false;
     }
+
+    /**
+     * Get the path to the package's migrations.
+     */
+    public static function migrationPath(): string
+    {
+        return __DIR__.'/../database/migrations';
+    }
 }
