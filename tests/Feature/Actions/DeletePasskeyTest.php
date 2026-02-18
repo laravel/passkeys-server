@@ -6,7 +6,7 @@ use Laravel\Passkeys\Events\PasskeyDeleted;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Tests\User;
 
-it('deletes the passkey', function () {
+it('deletes the passkey', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -23,7 +23,7 @@ it('deletes the passkey', function () {
     expect(Passkey::find($passkey->id))->toBeNull();
 });
 
-it('dispatches passkey deleted event', function () {
+it('dispatches passkey deleted event', function (): void {
     Event::fake([PasskeyDeleted::class]);
 
     $user = User::create([
@@ -39,7 +39,5 @@ it('dispatches passkey deleted event', function () {
 
     app(DeletePasskey::class)($user, $passkey);
 
-    Event::assertDispatched(PasskeyDeleted::class, function ($event) use ($user, $passkey) {
-        return $event->user->is($user) && $event->passkey->is($passkey);
-    });
+    Event::assertDispatched(PasskeyDeleted::class, fn ($event): bool => $event->user->is($user) && $event->passkey->is($passkey));
 });

@@ -5,7 +5,7 @@ use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Tests\User;
 
-it('returns registration options for authenticated user', function () {
+it('returns registration options for authenticated user', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -24,7 +24,7 @@ it('returns registration options for authenticated user', function () {
         ]);
 });
 
-it('stores registration options in session', function () {
+it('stores registration options in session', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -37,12 +37,12 @@ it('stores registration options in session', function () {
     expect(session('passkey.registration_options'))->not->toBeNull();
 });
 
-it('requires authentication for registration options', function () {
+it('requires authentication for registration options', function (): void {
     $this->getJson('/user/passkeys/options')
         ->assertUnauthorized();
 });
 
-it('requires authentication to store a passkey', function () {
+it('requires authentication to store a passkey', function (): void {
     $this->postJson('/user/passkeys', [
         'name' => 'My Passkey',
         'credential' => [
@@ -55,7 +55,7 @@ it('requires authentication to store a passkey', function () {
         ->assertUnauthorized();
 });
 
-it('returns validation error when passkey is invalid', function () {
+it('returns validation error when passkey is invalid', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -81,7 +81,7 @@ it('returns validation error when passkey is invalid', function () {
         ->assertJsonValidationErrors(['credential']);
 });
 
-it('returns validation error when session has expired', function () {
+it('returns validation error when session has expired', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -101,12 +101,12 @@ it('returns validation error when session has expired', function () {
         ->assertJsonValidationErrors(['credential']);
 });
 
-it('requires authentication to delete a passkey', function () {
+it('requires authentication to delete a passkey', function (): void {
     $this->deleteJson('/user/passkeys/1')
         ->assertUnauthorized();
 });
 
-it('deletes a passkey for the authenticated user', function () {
+it('deletes a passkey for the authenticated user', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -126,7 +126,7 @@ it('deletes a passkey for the authenticated user', function () {
     expect(Passkey::find($passkey->id))->toBeNull();
 });
 
-it('forbids deleting another user\'s passkey', function () {
+it("forbids deleting another user's passkey", function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',

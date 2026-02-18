@@ -8,3 +8,5 @@
 /.idea/
 *.swp
 *.swo
+.claude
+.DS_Store

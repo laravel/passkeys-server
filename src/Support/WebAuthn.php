@@ -91,7 +91,7 @@ final class WebAuthn
      */
     private static function attestationStatementSupportManager(): AttestationStatementSupportManager
     {
-        if (self::$attestationStatementSupportManager === null) {
+        if (! self::$attestationStatementSupportManager instanceof \Webauthn\AttestationStatement\AttestationStatementSupportManager) {
             self::$attestationStatementSupportManager = AttestationStatementSupportManager::create();
             self::$attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
         }
@@ -104,7 +104,7 @@ final class WebAuthn
      */
     private static function serializer(): SerializerInterface
     {
-        if (self::$serializer === null) {
+        if (! self::$serializer instanceof \Symfony\Component\Serializer\SerializerInterface) {
             self::$serializer = (new WebauthnSerializerFactory(
                 self::attestationStatementSupportManager()
             ))->create();

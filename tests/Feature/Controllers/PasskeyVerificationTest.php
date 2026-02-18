@@ -3,7 +3,7 @@
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 
-it('returns verification options', function () {
+it('returns verification options', function (): void {
     $this->getJson('/passkeys/options')
         ->assertOk()
         ->assertJsonStructure([
@@ -15,13 +15,13 @@ it('returns verification options', function () {
         ]);
 });
 
-it('stores verification options in session', function () {
+it('stores verification options in session', function (): void {
     $this->getJson('/passkeys/options')->assertOk();
 
     expect(session('passkey.verification_options'))->not->toBeNull();
 });
 
-it('returns validation error when passkey is invalid', function () {
+it('returns validation error when passkey is invalid', function (): void {
     $this->mock(VerifyPasskey::class, fn ($mock) => $mock
         ->shouldReceive('__invoke')
         ->andThrow(InvalidPasskeyException::make())
@@ -42,7 +42,7 @@ it('returns validation error when passkey is invalid', function () {
     $this->assertGuest();
 });
 
-it('returns validation error when verification throws unexpected exception', function () {
+it('returns validation error when verification throws unexpected exception', function (): void {
     $this->mock(VerifyPasskey::class, fn ($mock) => $mock
         ->shouldReceive('__invoke')
         ->andThrow(new RuntimeException('Unexpected'))
@@ -63,7 +63,7 @@ it('returns validation error when verification throws unexpected exception', fun
     $this->assertGuest();
 });
 
-it('returns validation error when session has expired', function () {
+it('returns validation error when session has expired', function (): void {
     $this->postJson('/passkeys/verify', [
         'credential' => [
             'id' => 'dGVzdC1pZA',

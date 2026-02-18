@@ -4,7 +4,7 @@ use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Tests\User;
 use Webauthn\PublicKeyCredentialCreationOptions;
 
-it('generates registration options with user data', function () {
+it('generates registration options with user data', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -17,7 +17,7 @@ it('generates registration options with user data', function () {
     expect($options->user->displayName)->toBe('john@example.com');
 });
 
-it('excludes existing credentials from registration', function () {
+it('excludes existing credentials from registration', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',

@@ -3,11 +3,11 @@
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 
-it('returns the default passkey model', function () {
+it('returns the default passkey model', function (): void {
     expect(Passkeys::passkeyModel())->toBe(Passkey::class);
 });
 
-it('can set a custom passkey model', function () {
+it('can set a custom passkey model', function (): void {
     Passkeys::usePasskeyModel(CustomPasskey::class);
 
     expect(Passkeys::passkeyModel())->toBe(CustomPasskey::class);
@@ -16,7 +16,7 @@ it('can set a custom passkey model', function () {
     Passkeys::usePasskeyModel(Passkey::class);
 });
 
-it('returns the configured timeout', function () {
+it('returns the configured timeout', function (): void {
     config(['passkeys.timeout' => 30000]);
 
     expect(Passkeys::timeout())->toBe(30000);

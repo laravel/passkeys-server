@@ -14,7 +14,7 @@ use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialUserEntity;
 
-it('stores a passkey for the user', function () {
+it('stores a passkey for the user', function (): void {
     Event::fake();
 
     $user = User::create([
@@ -48,12 +48,10 @@ it('stores a passkey for the user', function () {
     expect($passkey->user_id)->toBe($user->id);
     expect($user->passkeys()->count())->toBe(1);
 
-    Event::assertDispatched(PasskeyRegistered::class, function ($event) use ($user, $passkey) {
-        return $event->user->is($user) && $event->passkey->is($passkey);
-    });
+    Event::assertDispatched(PasskeyRegistered::class, fn ($event): bool => $event->user->is($user) && $event->passkey->is($passkey));
 });
 
-it('throws exception when credential is already registered', function () {
+it('throws exception when credential is already registered', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -89,7 +87,7 @@ it('throws exception when credential is already registered', function () {
     $action($user, 'Duplicate Passkey', $credential, $options);
 })->throws(InvalidPasskeyException::class, 'already registered');
 
-it('throws exception when response is not an attestation response', function () {
+it('throws exception when response is not an attestation response', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',

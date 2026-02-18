@@ -12,7 +12,7 @@ use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredential;
 
-it('verifies a passkey and returns it', function () {
+it('verifies a passkey and returns it', function (): void {
     Event::fake();
 
     $user = User::create([
@@ -60,12 +60,10 @@ it('verifies a passkey and returns it', function () {
     $result->refresh();
     expect($result->credential['counter'])->toBe(6);
 
-    Event::assertDispatched(PasskeyVerified::class, function ($event) use ($user, $passkey) {
-        return $event->user->is($user) && $event->passkey->is($passkey);
-    });
+    Event::assertDispatched(PasskeyVerified::class, fn ($event): bool => $event->user->is($user) && $event->passkey->is($passkey));
 });
 
-it('throws exception when response is not an assertion response', function () {
+it('throws exception when response is not an assertion response', function (): void {
     $attestationResponse = Mockery::mock(AuthenticatorAttestationResponse::class);
 
     $credential = PublicKeyCredential::create(
@@ -79,7 +77,7 @@ it('throws exception when response is not an assertion response', function () {
     app(VerifyPasskey::class)($credential, $options);
 })->throws(InvalidPasskeyException::class, 'Unable to verify passkey');
 
-it('throws exception when passkey is not found', function () {
+it('throws exception when passkey is not found', function (): void {
     $assertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
 
     $credential = PublicKeyCredential::create(

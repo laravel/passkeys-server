@@ -11,7 +11,8 @@ use Laravel\Passkeys\Passkey;
 
 class PasskeyDeleted
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     /**
      * Create a new event instance.

@@ -6,11 +6,11 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialUserEntity;
 
-beforeEach(function () {
+beforeEach(function (): void {
     WebAuthn::flush();
 });
 
-it('serializes and deserializes registration options', function () {
+it('serializes and deserializes registration options', function (): void {
     $options = PublicKeyCredentialCreationOptions::create(
         rp: PublicKeyCredentialRpEntity::create(name: 'Test App', id: 'localhost'),
         user: PublicKeyCredentialUserEntity::create(
@@ -30,7 +30,7 @@ it('serializes and deserializes registration options', function () {
     expect($restored->user->displayName)->toBe('Test User');
 });
 
-it('serializes and deserializes verification options', function () {
+it('serializes and deserializes verification options', function (): void {
     $options = PublicKeyCredentialRequestOptions::create(
         challenge: random_bytes(32),
         rpId: 'localhost',
@@ -43,7 +43,7 @@ it('serializes and deserializes verification options', function () {
     expect($restored->challenge)->toBe($options->challenge);
 });
 
-it('creates validators without throwing', function () {
+it('creates validators without throwing', function (): void {
     // These should create functional validators
     // without any configuration errors
     $attestation = WebAuthn::attestationValidator();
@@ -53,7 +53,7 @@ it('creates validators without throwing', function () {
     expect($assertion)->not->toBeNull();
 });
 
-it('flushes cached instances', function () {
+it('flushes cached instances', function (): void {
     // Call twice to populate cache
     WebAuthn::toJson(['test' => 'data']);
     WebAuthn::toJson(['test' => 'data']);

@@ -100,7 +100,7 @@ class GenerateRegistrationOptions
         $type = PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY;
 
         return $user->passkeys()->get()->map(
-            fn ($passkey) => PublicKeyCredentialDescriptor::create(
+            fn ($passkey): \Webauthn\PublicKeyCredentialDescriptor => PublicKeyCredentialDescriptor::create(
                 $type,
                 Base64UrlSafe::decodeNoPadding($passkey->credential_id)
             )
