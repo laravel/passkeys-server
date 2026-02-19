@@ -2,6 +2,11 @@
 
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
+use Laravel\Passkeys\Tests\User;
+
+afterEach(function (): void {
+    Passkeys::authenticateUsing(null);
+});
 
 it('returns the default passkey model', function (): void {
     expect(Passkeys::passkeyModel())->toBe(Passkey::class);
@@ -20,6 +25,23 @@ it('returns the configured timeout', function (): void {
     config(['passkeys.timeout' => 30000]);
 
     expect(Passkeys::timeout())->toBe(30000);
+});
+
+it('supports custom authentication callbacks', function (): void {
+    $user = User::create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'My Passkey',
+        'credential_id' => 'test-credential-id',
+        'credential' => [],
+    ]);
+
+    Passkeys::authenticateUsing(fn (): false => false);
+
+    expect(Passkeys::canAuthenticate(request(), $passkey))->toBeFalse();
 });
 
 class CustomPasskey extends Passkey

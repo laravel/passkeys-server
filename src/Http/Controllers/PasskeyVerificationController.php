@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Contracts\PasskeyVerificationResponse;
+use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Http\Requests\PasskeyVerificationRequest;
+use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use RuntimeException;
 
@@ -51,6 +53,10 @@ class PasskeyVerificationController extends Controller
 
         if (! $guard instanceof StatefulGuard) {
             throw new RuntimeException('Passkeys requires a stateful authentication guard.');
+        }
+
+        if (! Passkeys::canAuthenticate($request, $passkey)) {
+            throw InvalidPasskeyException::make('Unable to verify passkey. Please try again.');
         }
 
         $guard->login($passkey->user, $request->remember());

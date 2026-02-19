@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Actions;
 
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Events\PasskeyVerified;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Passkey;
@@ -24,10 +25,13 @@ class VerifyPasskey
      */
     public function __invoke(
         PublicKeyCredential $credential,
-        PublicKeyCredentialRequestOptions $options
+        PublicKeyCredentialRequestOptions $options,
+        ?PasskeyUser $user = null
     ): Passkey {
         $response = $this->getResponse($credential);
         $passkey = $this->getPasskey($credential);
+
+        $this->ensurePasskeyBelongsToUser($passkey, $user);
 
         $source = $this->validate($response, $passkey, $options);
 
@@ -63,6 +67,24 @@ class VerifyPasskey
 
         return Passkeys::passkeyModel()::where('credential_id', $credentialId)->first()
             ?? throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
+    }
+
+    /**
+     * Ensure the passkey belongs to the expected user.
+     *
+     * @throws InvalidPasskeyException
+     */
+    protected function ensurePasskeyBelongsToUser(Passkey $passkey, ?PasskeyUser $user): void
+    {
+        if (! $user instanceof PasskeyUser) {
+            return;
+        }
+
+        $identifier = $user->getAuthIdentifier();
+
+        if (! is_scalar($identifier) || (string) $passkey->user_id !== (string) $identifier) {
+            throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
+        }
     }
 
     /**

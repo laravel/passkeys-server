@@ -90,3 +90,44 @@ it('throws exception when passkey is not found', function (): void {
 
     app(VerifyPasskey::class)($credential, $options);
 })->throws(InvalidPasskeyException::class, 'Passkey not recognized');
+
+it('throws exception when passkey does not belong to expected user', function (): void {
+    $owner = User::create([
+        'name' => 'Passkey Owner',
+        'email' => 'owner@example.com',
+    ]);
+
+    $otherUser = User::create([
+        'name' => 'Other User',
+        'email' => 'other@example.com',
+    ]);
+
+    $credentialId = random_bytes(16);
+    $userHandle = (string) $owner->id;
+    $source = createCredentialSource($userHandle, $credentialId, counter: 1);
+
+    $owner->passkeys()->create([
+        'name' => 'My MacBook',
+        'credential_id' => Base64UrlSafe::encodeUnpadded($credentialId),
+        'credential' => json_decode(WebAuthn::toJson($source), true),
+    ]);
+
+    $assertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
+
+    $credential = PublicKeyCredential::create(
+        type: 'public-key',
+        rawId: $credentialId,
+        response: $assertionResponse
+    );
+
+    $options = createRequestOptions();
+
+    $action = Mockery::mock(VerifyPasskey::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('validate')
+        ->never()
+        ->getMock();
+
+    $action($credential, $options, $otherUser);
+})->throws(InvalidPasskeyException::class, 'Passkey not recognized');

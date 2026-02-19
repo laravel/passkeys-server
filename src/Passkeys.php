@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys;
 
+use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use RuntimeException;
 
@@ -29,6 +31,13 @@ class Passkeys
      * Indicates if routes should be registered.
      */
     private static bool $registersRoutes = true;
+
+    /**
+     * Callback to determine if a passkey-verified user should be logged in.
+     *
+     * @var (Closure(Request, Contracts\PasskeyUser, Passkey): bool)|null
+     */
+    private static ?Closure $authenticateUsing = null;
 
     /**
      * Get the relying party ID.
@@ -109,6 +118,30 @@ class Passkeys
     public static function useUserModel(string $model): void
     {
         static::$userModel = $model;
+    }
+
+    /**
+     * Register a callback to authorize passkey sign-ins before login.
+     *
+     * @param  (callable(Request, Contracts\PasskeyUser, Passkey): bool)|null  $callback
+     */
+    public static function authenticateUsing(?callable $callback): void
+    {
+        self::$authenticateUsing = $callback !== null
+            ? Closure::fromCallable($callback)
+            : null;
+    }
+
+    /**
+     * Determine if a passkey-verified user should be authenticated.
+     */
+    public static function canAuthenticate(Request $request, Passkey $passkey): bool
+    {
+        if (! self::$authenticateUsing instanceof Closure) {
+            return true;
+        }
+
+        return (bool) (self::$authenticateUsing)($request, $passkey->user, $passkey);
     }
 
     /**

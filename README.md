@@ -114,6 +114,49 @@ The package fires the following events:
 
 ## Customization
 
+### Sign-In Authorization Callback
+
+You may block login after a valid passkey assertion (for example, suspended/banned accounts):
+
+```php
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
+
+Passkeys::authenticateUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
+    if ($user->is_banned) {
+        throw ValidationException::withMessages([
+            'credential' => ['This account has been banned.'],
+        ]);
+    }
+
+    return true;
+});
+```
+
+Return `false` to stop authentication, or throw your own `ValidationException` for a custom error message.
+
+### User-Bound Verification (Reauth / 2FA Step)
+
+Use `GenerateVerificationOptions` with an authenticated user to scope allowed credentials to that user, then pass the same user into `VerifyPasskey` to enforce ownership:
+
+```php
+use Laravel\Passkeys\Actions\GenerateVerificationOptions;
+use Laravel\Passkeys\Actions\VerifyPasskey;
+
+$options = app(GenerateVerificationOptions::class)($request->user());
+
+$passkey = app(VerifyPasskey::class)(
+    $request->credential(),
+    $options,
+    $request->user(),
+);
+```
+
+This verifies the passkey without logging the user in again, which is useful for sensitive-action confirmation flows.
+
 ### Custom Actions
 
 Actions handle the core WebAuthn logic. Extend an action and bind it in your service provider:
