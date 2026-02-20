@@ -16,4 +16,7 @@ namespace Laravel\Passkeys\Contracts;
  * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
  */
-interface Passkey {}
+interface Passkey
+{
+    //
+}
