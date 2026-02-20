@@ -125,7 +125,7 @@ use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 
-Passkeys::authenticateUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
+Passkeys::authorizeSignInUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
     if ($user->is_banned) {
         throw ValidationException::withMessages([
             'credential' => ['This account has been banned.'],

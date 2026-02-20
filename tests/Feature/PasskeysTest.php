@@ -5,7 +5,7 @@ use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Tests\User;
 
 afterEach(function (): void {
-    Passkeys::authenticateUsing(null);
+    Passkeys::authorizeSignInUsing(null);
 });
 
 it('returns the default passkey model', function (): void {
@@ -27,7 +27,7 @@ it('returns the configured timeout', function (): void {
     expect(Passkeys::timeout())->toBe(30000);
 });
 
-it('supports custom authentication callbacks', function (): void {
+it('supports custom sign-in authorization callbacks', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -39,9 +39,9 @@ it('supports custom authentication callbacks', function (): void {
         'credential' => [],
     ]);
 
-    Passkeys::authenticateUsing(fn (): false => false);
+    Passkeys::authorizeSignInUsing(fn (): bool => false);
 
-    expect(Passkeys::canAuthenticate(request(), $passkey))->toBeFalse();
+    expect(Passkeys::allowsSignIn(request(), $passkey))->toBeFalse();
 });
 
 class CustomPasskey extends Passkey

@@ -55,8 +55,8 @@ class PasskeyVerificationController extends Controller
             throw new RuntimeException('Passkeys requires a stateful authentication guard.');
         }
 
-        if (! Passkeys::canAuthenticate($request, $passkey)) {
-            throw InvalidPasskeyException::make('Unable to verify passkey. Please try again.');
+        if (! Passkeys::allowsSignIn($request, $passkey)) {
+            throw InvalidPasskeyException::make('Unable to sign in with this account.');
         }
 
         $guard->login($passkey->user, $request->remember());
