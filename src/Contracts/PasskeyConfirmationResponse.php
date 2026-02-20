@@ -6,7 +6,7 @@ namespace Laravel\Passkeys\Contracts;
 
 use Illuminate\Contracts\Support\Responsable;
 
-interface PasskeyVerificationResponse extends Responsable
+interface PasskeyConfirmationResponse extends Responsable
 {
     //
 }

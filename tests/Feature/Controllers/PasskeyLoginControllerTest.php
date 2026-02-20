@@ -29,7 +29,7 @@ it('does not log in when custom sign-in authorization callback returns false', f
     Passkeys::authorizeSignInUsing(fn (): bool => false);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
-        ->postJson('/passkeys/verify', ['credential' => createAssertionCredential()])
+        ->postJson('/passkeys/login', ['credential' => createAssertionCredential()])
         ->assertUnprocessable();
 
     $this->assertGuest();
@@ -55,12 +55,13 @@ it('logs in when custom sign-in authorization callback returns true', function (
     Passkeys::authorizeSignInUsing(fn (): bool => true);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
-        ->postJson('/passkeys/verify', [
+        ->postJson('/passkeys/login', [
             'credential' => createAssertionCredential(),
             'remember' => true,
         ])
         ->assertOk()
-        ->assertJson(['verified' => true]);
+        ->assertJsonStructure(['redirect'])
+        ->assertJsonMissing(['verified']);
 
     $this->assertAuthenticatedAs($user);
 });
