@@ -5,7 +5,7 @@ use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Tests\User;
 
 afterEach(function (): void {
-    Passkeys::authorizeSignInUsing(null);
+    Passkeys::authorizeLoginUsing(null);
 });
 
 it('returns the default passkey model', function (): void {
@@ -39,9 +39,9 @@ it('supports custom sign-in authorization callbacks', function (): void {
         'credential' => [],
     ]);
 
-    Passkeys::authorizeSignInUsing(fn (): bool => false);
+    Passkeys::authorizeLoginUsing(fn (): bool => false);
 
-    expect(Passkeys::allowsSignIn(request(), $passkey))->toBeFalse();
+    expect(Passkeys::allowsLogin(request(), $passkey))->toBeFalse();
 });
 
 class CustomPasskey extends Passkey

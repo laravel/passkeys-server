@@ -118,7 +118,7 @@ The package fires the following events:
 
 ## Customization
 
-### Sign-In Authorization Callback
+### Login Authorization Callback
 
 You may block login after a valid passkey assertion (for example, suspended/banned accounts):
 
@@ -129,7 +129,7 @@ use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 
-Passkeys::authorizeSignInUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
+Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
     if ($user->is_banned) {
         throw ValidationException::withMessages([
             'credential' => ['This account has been banned.'],

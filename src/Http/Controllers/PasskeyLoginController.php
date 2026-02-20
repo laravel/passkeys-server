@@ -55,7 +55,7 @@ class PasskeyLoginController extends Controller
             throw new RuntimeException('Passkeys requires a stateful authentication guard.');
         }
 
-        if (! Passkeys::allowsSignIn($request, $passkey)) {
+        if (! Passkeys::allowsLogin($request, $passkey)) {
             throw InvalidPasskeyException::make('Unable to sign in with this account.');
         }
 

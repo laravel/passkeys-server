@@ -6,7 +6,7 @@ use Laravel\Passkeys\Support\WebAuthn;
 use Laravel\Passkeys\Tests\User;
 
 afterEach(function (): void {
-    Passkeys::authorizeSignInUsing(null);
+    Passkeys::authorizeLoginUsing(null);
 });
 
 it('does not log in when custom sign-in authorization callback returns false', function (): void {
@@ -26,7 +26,7 @@ it('does not log in when custom sign-in authorization callback returns false', f
         ->once()
         ->andReturn($passkey);
 
-    Passkeys::authorizeSignInUsing(fn (): bool => false);
+    Passkeys::authorizeLoginUsing(fn (): bool => false);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
         ->postJson('/passkeys/login', ['credential' => createAssertionCredential()])
@@ -52,7 +52,7 @@ it('logs in when custom sign-in authorization callback returns true', function (
         ->once()
         ->andReturn($passkey);
 
-    Passkeys::authorizeSignInUsing(fn (): bool => true);
+    Passkeys::authorizeLoginUsing(fn (): bool => true);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
         ->postJson('/passkeys/login', [
