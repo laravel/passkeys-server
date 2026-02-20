@@ -20,5 +20,7 @@ class PasskeyDeleted
     public function __construct(
         public Authenticatable $user,
         public Passkey $passkey
-    ) {}
+    ) {
+        //
+    }
 }
