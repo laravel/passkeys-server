@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Actions;
 
 use Cose\Algorithms;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkeys;
 use ParagonIE\ConstantTime\Base64UrlSafe;
-use RuntimeException;
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialDescriptor;
@@ -22,12 +20,8 @@ class GenerateRegistrationOptions
     /**
      * Generate registration options for a user to create a new passkey.
      */
-    public function __invoke(Authenticatable $user): PublicKeyCredentialCreationOptions
+    public function __invoke(PasskeyUser $user): PublicKeyCredentialCreationOptions
     {
-        if (! $user instanceof PasskeyUser) {
-            throw new RuntimeException('User model must implement the PasskeyUser contract.');
-        }
-
         // Don't verify the authenticator's attestation certificate chain.
         $attestation = PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
 
