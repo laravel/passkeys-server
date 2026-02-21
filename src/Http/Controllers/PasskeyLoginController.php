@@ -12,17 +12,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
-use Laravel\Passkeys\Contracts\PasskeyVerificationResponse;
+use Laravel\Passkeys\Contracts\PasskeyLoginResponse;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Http\Requests\PasskeyVerificationRequest;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use RuntimeException;
 
-class PasskeyVerificationController extends Controller
+class PasskeyLoginController extends Controller
 {
     /**
-     * Get passkey verification options.
+     * Get passkey login options.
      */
     public function index(Request $request, GenerateVerificationOptions $generate): JsonResponse
     {
@@ -43,7 +43,7 @@ class PasskeyVerificationController extends Controller
     public function store(
         PasskeyVerificationRequest $request,
         VerifyPasskey $verify,
-    ): PasskeyVerificationResponse {
+    ): PasskeyLoginResponse {
         $passkey = $verify(
             $request->credential(),
             $request->verificationOptions()
@@ -55,14 +55,14 @@ class PasskeyVerificationController extends Controller
             throw new RuntimeException('Passkeys requires a stateful authentication guard.');
         }
 
-        if (! Passkeys::canAuthenticate($request, $passkey)) {
-            throw InvalidPasskeyException::make('Unable to verify passkey. Please try again.');
+        if (! Passkeys::allowsLogin($request, $passkey)) {
+            throw InvalidPasskeyException::make('Unable to sign in with this account.');
         }
 
         $guard->login($passkey->user, $request->remember());
 
         $request->session()->regenerate();
 
-        return app(PasskeyVerificationResponse::class);
+        return app(PasskeyLoginResponse::class);
     }
 }

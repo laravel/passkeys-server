@@ -6,10 +6,10 @@ use Laravel\Passkeys\Support\WebAuthn;
 use Laravel\Passkeys\Tests\User;
 
 afterEach(function (): void {
-    Passkeys::authenticateUsing(null);
+    Passkeys::authorizeLoginUsing(null);
 });
 
-it('does not log in when custom authentication callback returns false', function (): void {
+it('does not log in when custom sign-in authorization callback returns false', function (): void {
     $user = User::create([
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -26,16 +26,16 @@ it('does not log in when custom authentication callback returns false', function
         ->once()
         ->andReturn($passkey);
 
-    Passkeys::authenticateUsing(fn (): false => false);
+    Passkeys::authorizeLoginUsing(fn (): bool => false);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
-        ->postJson('/passkeys/verify', ['credential' => createAssertionCredential()])
+        ->postJson('/passkeys/login', ['credential' => createAssertionCredential()])
         ->assertUnprocessable();
 
     $this->assertGuest();
 });
 
-it('logs in when custom authentication callback returns true', function (): void {
+it('logs in when custom sign-in authorization callback returns true', function (): void {
     $user = User::create([
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
@@ -52,15 +52,16 @@ it('logs in when custom authentication callback returns true', function (): void
         ->once()
         ->andReturn($passkey);
 
-    Passkeys::authenticateUsing(fn (): true => true);
+    Passkeys::authorizeLoginUsing(fn (): bool => true);
 
     $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
-        ->postJson('/passkeys/verify', [
+        ->postJson('/passkeys/login', [
             'credential' => createAssertionCredential(),
             'remember' => true,
         ])
         ->assertOk()
-        ->assertJson(['verified' => true]);
+        ->assertJsonStructure(['redirect'])
+        ->assertJsonMissing(['verified']);
 
     $this->assertAuthenticatedAs($user);
 });

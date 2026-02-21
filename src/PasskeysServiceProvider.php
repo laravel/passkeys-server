@@ -6,12 +6,14 @@ namespace Laravel\Passkeys;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passkeys\Contracts\PasskeyConfirmationResponse as PasskeyConfirmationResponseContract;
 use Laravel\Passkeys\Contracts\PasskeyDeletedResponse as PasskeyDeletedResponseContract;
+use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse as PasskeyRegistrationResponseContract;
-use Laravel\Passkeys\Contracts\PasskeyVerificationResponse as PasskeyVerificationResponseContract;
+use Laravel\Passkeys\Http\Responses\PasskeyConfirmationResponse;
 use Laravel\Passkeys\Http\Responses\PasskeyDeletedResponse;
+use Laravel\Passkeys\Http\Responses\PasskeyLoginResponse;
 use Laravel\Passkeys\Http\Responses\PasskeyRegistrationResponse;
-use Laravel\Passkeys\Http\Responses\PasskeyVerificationResponse;
 
 class PasskeysServiceProvider extends ServiceProvider
 {
@@ -22,9 +24,10 @@ class PasskeysServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/passkeys.php', 'passkeys');
 
+        $this->app->singleton(PasskeyLoginResponseContract::class, PasskeyLoginResponse::class);
+        $this->app->singleton(PasskeyConfirmationResponseContract::class, PasskeyConfirmationResponse::class);
         $this->app->singleton(PasskeyRegistrationResponseContract::class, PasskeyRegistrationResponse::class);
         $this->app->singleton(PasskeyDeletedResponseContract::class, PasskeyDeletedResponse::class);
-        $this->app->singleton(PasskeyVerificationResponseContract::class, PasskeyVerificationResponse::class);
     }
 
     /**

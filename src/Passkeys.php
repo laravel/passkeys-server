@@ -37,7 +37,7 @@ class Passkeys
      *
      * @var (Closure(Request, Contracts\PasskeyUser, Passkey): bool)|null
      */
-    private static ?Closure $authenticateUsing = null;
+    private static ?Closure $authorizeLoginUsing = null;
 
     /**
      * Get the relying party ID.
@@ -121,27 +121,27 @@ class Passkeys
     }
 
     /**
-     * Register a callback to authorize passkey sign-ins before login.
+     * Register a callback to authorize passkey logins before login.
      *
      * @param  (callable(Request, Contracts\PasskeyUser, Passkey): bool)|null  $callback
      */
-    public static function authenticateUsing(?callable $callback): void
+    public static function authorizeLoginUsing(?callable $callback): void
     {
-        self::$authenticateUsing = $callback !== null
+        self::$authorizeLoginUsing = $callback !== null
             ? Closure::fromCallable($callback)
             : null;
     }
 
     /**
-     * Determine if a passkey-verified user should be authenticated.
+     * Determine if a passkey-verified user should be allowed to log in.
      */
-    public static function canAuthenticate(Request $request, Passkey $passkey): bool
+    public static function allowsLogin(Request $request, Passkey $passkey): bool
     {
-        if (! self::$authenticateUsing instanceof Closure) {
+        if (! self::$authorizeLoginUsing instanceof Closure) {
             return true;
         }
 
-        return (bool) (self::$authenticateUsing)($request, $passkey->user, $passkey);
+        return (bool) (self::$authorizeLoginUsing)($request, $passkey->user, $passkey);
     }
 
     /**

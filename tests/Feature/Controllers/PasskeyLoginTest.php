@@ -2,9 +2,10 @@
 
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
+use Laravel\Passkeys\Support\WebAuthn;
 
-it('returns verification options', function (): void {
-    $this->getJson('/passkeys/options')
+it('returns login options', function (): void {
+    $this->getJson('/passkeys/login/options')
         ->assertOk()
         ->assertJsonStructure([
             'options' => [
@@ -15,8 +16,8 @@ it('returns verification options', function (): void {
         ]);
 });
 
-it('stores verification options in session', function (): void {
-    $this->getJson('/passkeys/options')->assertOk();
+it('stores login options in session', function (): void {
+    $this->getJson('/passkeys/login/options')->assertOk();
 
     expect(session('passkey.verification_options'))->not->toBeNull();
 });
@@ -27,8 +28,8 @@ it('returns validation error when passkey is invalid', function (): void {
         ->andThrow(InvalidPasskeyException::make())
     );
 
-    $this->withSession(['passkey.verification_options' => 'serialized-options'])
-        ->postJson('/passkeys/verify', [
+    $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
+        ->postJson('/passkeys/login', [
             'credential' => [
                 'id' => 'dGVzdC1pZA',
                 'rawId' => 'dGVzdC1pZA',
@@ -48,8 +49,8 @@ it('returns validation error when verification throws unexpected exception', fun
         ->andThrow(new RuntimeException('Unexpected'))
     );
 
-    $this->withSession(['passkey.verification_options' => 'serialized-options'])
-        ->postJson('/passkeys/verify', [
+    $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
+        ->postJson('/passkeys/login', [
             'credential' => [
                 'id' => 'dGVzdC1pZA',
                 'rawId' => 'dGVzdC1pZA',
@@ -64,7 +65,7 @@ it('returns validation error when verification throws unexpected exception', fun
 });
 
 it('returns validation error when session has expired', function (): void {
-    $this->postJson('/passkeys/verify', [
+    $this->postJson('/passkeys/login', [
         'credential' => [
             'id' => 'dGVzdC1pZA',
             'rawId' => 'dGVzdC1pZA',

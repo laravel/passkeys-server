@@ -69,9 +69,13 @@ await Passkeys.verify()
 
 The package automatically registers the following routes:
 
-### Guest Routes (Verification)
-- `GET /passkeys/options` - Get verification options
-- `POST /passkeys/verify` - Verify passkey and authenticate
+### Guest Routes (Login)
+- `GET /passkeys/login/options` - Get login options
+- `POST /passkeys/login` - Verify passkey and authenticate
+
+### Authenticated Routes (Confirmation)
+- `GET /passkeys/confirm/options` - Get confirmation options
+- `POST /passkeys/confirm` - Confirm password via passkey
 
 ### Authenticated Routes (Management)
 - `GET /user/passkeys/options` - Get registration options
@@ -114,7 +118,7 @@ The package fires the following events:
 
 ## Customization
 
-### Sign-In Authorization Callback
+### Login Authorization Callback
 
 You may block login after a valid passkey assertion (for example, suspended/banned accounts):
 
@@ -125,7 +129,7 @@ use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 
-Passkeys::authenticateUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
+Passkeys::authorizeLoginUsing(function (Request $request, PasskeyUser $user, Passkey $passkey): bool {
     if ($user->is_banned) {
         throw ValidationException::withMessages([
             'credential' => ['This account has been banned.'],
@@ -194,9 +198,9 @@ Available actions:
 Bind your own response classes to customize what happens after passkey operations:
 
 ```php
-use Laravel\Passkeys\Contracts\PasskeyVerificationResponse;
+use Laravel\Passkeys\Contracts\PasskeyLoginResponse;
 
-class MyVerificationResponse implements PasskeyVerificationResponse
+class MyLoginResponse implements PasskeyLoginResponse
 {
     public function toResponse($request)
     {
@@ -205,11 +209,12 @@ class MyVerificationResponse implements PasskeyVerificationResponse
 }
 
 // In your service provider
-$this->app->singleton(PasskeyVerificationResponse::class, MyVerificationResponse::class);
+$this->app->singleton(PasskeyLoginResponse::class, MyLoginResponse::class);
 ```
 
 Available response contracts:
-- `PasskeyVerificationResponse` - After successful verification
+- `PasskeyLoginResponse` - After successful login
+- `PasskeyConfirmationResponse` - After successful confirmation
 - `PasskeyRegistrationResponse` - After successful registration
 - `PasskeyDeletedResponse` - After passkey deletion
 

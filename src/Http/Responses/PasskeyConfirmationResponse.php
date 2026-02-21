@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
-use Laravel\Passkeys\Contracts\PasskeyVerificationResponse as PasskeyVerificationResponseContract;
+use Laravel\Passkeys\Contracts\PasskeyConfirmationResponse as PasskeyConfirmationResponseContract;
 
-class PasskeyVerificationResponse implements PasskeyVerificationResponseContract
+class PasskeyConfirmationResponse implements PasskeyConfirmationResponseContract
 {
     /**
      * Create an HTTP response that represents the object.
@@ -19,11 +19,10 @@ class PasskeyVerificationResponse implements PasskeyVerificationResponseContract
     {
         if ($request->wantsJson()) {
             return new JsonResponse([
-                'verified' => true,
-                'redirect' => redirect()->intended(config('passkeys.redirect', '/dashboard'))->getTargetUrl(),
+                'redirect' => redirect()->intended()->getTargetUrl(),
             ], 200);
         }
 
-        return redirect()->intended(config('passkeys.redirect', '/dashboard'));
+        return redirect()->intended();
     }
 }
