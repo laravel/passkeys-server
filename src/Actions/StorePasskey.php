@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Actions;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Events\PasskeyRegistered;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
@@ -11,6 +12,7 @@ use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use RuntimeException;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
@@ -24,11 +26,15 @@ class StorePasskey
      * @throws \Laravel\Passkeys\Exceptions\InvalidPasskeyException
      */
     public function __invoke(
-        PasskeyUser $user,
+        Authenticatable $user,
         string $name,
         PublicKeyCredential $credential,
         PublicKeyCredentialCreationOptions $options
     ): Passkey {
+        if (! $user instanceof PasskeyUser) {
+            throw new RuntimeException('User model must implement the PasskeyUser contract.');
+        }
+
         $response = $this->getResponse($credential);
 
         $source = $this->validate($response, $options);
