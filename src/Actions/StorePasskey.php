@@ -99,7 +99,7 @@ class StorePasskey
         return $user->passkeys()->create([
             'name' => $name,
             'credential_id' => $credentialId,
-            'credential' => json_decode(WebAuthn::toJson($source), true, 512, JSON_THROW_ON_ERROR),
+            'credential' => json_decode(WebAuthn::toJson($source), true, flags: JSON_THROW_ON_ERROR),
         ]);
     }
 }
