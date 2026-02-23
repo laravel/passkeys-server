@@ -64,7 +64,6 @@ class PasskeyRegistrationController extends Controller
      * Delete a passkey for the authenticated user.
      */
     public function destroy(
-        Request $request,
         Passkey $passkey,
         DeletePasskey $deletePasskey
     ): PasskeyDeletedResponse {
