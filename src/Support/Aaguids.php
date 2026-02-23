@@ -11,6 +11,8 @@ namespace Laravel\Passkeys\Support;
  */
 enum Aaguids: string
 {
+    public const string UNKNOWN = '00000000-0000-0000-0000-000000000000';
+
     case AliasVault = 'a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942';
     case GooglePasswordManager = 'ea9b8d66-4d01-1d21-3ce4-b6b48cb575d4';
     case ChromeOnMac = 'adce0002-35bc-c60a-648b-0b25f1f05503';
