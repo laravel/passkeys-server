@@ -118,7 +118,7 @@ class VerifyPasskey
     protected function updatePasskey(Passkey $passkey, PublicKeyCredentialSource $source): void
     {
         $passkey->forceFill([
-            'credential' => json_decode(WebAuthn::toJson($source), true),
+            'credential' => json_decode(WebAuthn::toJson($source), true, flags: JSON_THROW_ON_ERROR),
             'last_used_at' => now(),
         ])->save();
     }
