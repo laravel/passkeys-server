@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Contracts;
 
 /**
+ * Passkey model contract. Implementations must extend \Illuminate\Database\Eloquent\Model.
+ *
  * @property int $id
  * @property int|string $user_id
  * @property string $name

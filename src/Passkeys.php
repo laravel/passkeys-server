@@ -14,7 +14,7 @@ class Passkeys
     /**
      * The passkey model class name.
      *
-     * @var class-string<Contracts\Passkey>
+     * @var class-string<\Illuminate\Database\Eloquent\Model>&class-string<Contracts\Passkey>
      *
      * @phpstan-var class-string<Passkey>
      */
@@ -79,7 +79,7 @@ class Passkeys
     /**
      * Get the passkey model class name.
      *
-     * @return class-string<Contracts\Passkey>
+     * @return class-string<\Illuminate\Database\Eloquent\Model>&class-string<Contracts\Passkey>
      *
      * @phpstan-return class-string<Passkey>
      */
@@ -91,7 +91,7 @@ class Passkeys
     /**
      * Set the passkey model class name.
      *
-     * @param  class-string<Contracts\Passkey>  $model
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>&class-string<Contracts\Passkey>  $model
      *
      * @phpstan-param class-string<Passkey>  $model
      */
