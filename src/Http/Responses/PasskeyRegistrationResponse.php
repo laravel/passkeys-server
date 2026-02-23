@@ -33,17 +33,17 @@ class PasskeyRegistrationResponse implements PasskeyRegistrationResponseContract
      */
     public function toResponse($request)
     {
-        if ($request->wantsJson()) {
-            $data = ['status' => 'passkey-registered'];
-
-            if ($this->passkey instanceof \Laravel\Passkeys\Passkey) {
-                $data['id'] = (string) $this->passkey->id;
-                $data['name'] = $this->passkey->name;
-            }
-
-            return new JsonResponse($data, 200);
+        if (! $request->wantsJson()) {
+            return back()->with('status', 'passkey-registered');
         }
 
-        return back()->with('status', 'passkey-registered');
+        $data = ['status' => 'passkey-registered'];
+
+        if ($this->passkey instanceof \Laravel\Passkeys\Passkey) {
+            $data['id'] = (string) $this->passkey->id;
+            $data['name'] = $this->passkey->name;
+        }
+
+        return new JsonResponse($data, 200);
     }
 }
