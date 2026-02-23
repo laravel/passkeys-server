@@ -81,7 +81,7 @@ class Passkey extends Model implements PasskeyContract
         return Attribute::get(function (): ?string {
             $aaguid = $this->credential['aaguid'] ?? null;
 
-            if (! is_string($aaguid) || $aaguid === Aaguids::UNKNOWN) {
+            if (! is_string($aaguid) || $aaguid === Aaguids::unknown()) {
                 return null;
             }
 
