@@ -76,6 +76,8 @@ final class WebAuthn
     {
         $factory = new CeremonyStepManagerFactory;
 
+        $factory->setAllowedOrigins([]);
+
         $factory->setAttestationStatementSupportManager(
             self::attestationStatementSupportManager()
         );
