@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Contracts;
 
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 interface PasskeyUser extends Authenticatable
@@ -12,9 +13,9 @@ interface PasskeyUser extends Authenticatable
     /**
      * Get the passkeys associated with the user.
      *
-     * @return HasMany<Passkey, \Illuminate\Database\Eloquent\Model>
+     * @return HasMany<Passkey, Model>
      *
-     * @phpstan-return HasMany<\Laravel\Passkeys\Passkey, \Illuminate\Database\Eloquent\Model>
+     * @phpstan-return HasMany<\Laravel\Passkeys\Passkey, Model>
      */
     public function passkeys(): HasMany;
 

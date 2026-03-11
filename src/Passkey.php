@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\Aaguids;
 
 /**
- * @mixin \Illuminate\Database\Eloquent\Builder<Passkey>
+ * @mixin Builder<Passkey>
  *
  * @property int $id
  * @property int|string $user_id
  * @property string $name
  * @property string $credential_id
  * @property array<string, mixed> $credential
- * @property \Illuminate\Support\Carbon|null $last_used_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $last_used_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
  */

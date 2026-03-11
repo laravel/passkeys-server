@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse as PasskeyRegistrationResponseContract;
 use Laravel\Passkeys\Passkey;
+use Symfony\Component\HttpFoundation\Response;
 
 class PasskeyRegistrationResponse implements PasskeyRegistrationResponseContract
 {
@@ -28,8 +30,8 @@ class PasskeyRegistrationResponse implements PasskeyRegistrationResponseContract
     /**
      * Create an HTTP response that represents the object.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  Request  $request
+     * @return Response
      */
     public function toResponse($request)
     {
@@ -39,7 +41,7 @@ class PasskeyRegistrationResponse implements PasskeyRegistrationResponseContract
 
         $data = ['status' => 'passkey-registered'];
 
-        if ($this->passkey instanceof \Laravel\Passkeys\Passkey) {
+        if ($this->passkey instanceof Passkey) {
             $data['id'] = (string) $this->passkey->id;
             $data['name'] = $this->passkey->name;
         }

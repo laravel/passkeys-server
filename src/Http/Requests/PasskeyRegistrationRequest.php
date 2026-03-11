@@ -73,7 +73,7 @@ class PasskeyRegistrationRequest extends FormRequest
     /**
      * Get the registration options from the session.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function registrationOptions(): PublicKeyCredentialCreationOptions
     {

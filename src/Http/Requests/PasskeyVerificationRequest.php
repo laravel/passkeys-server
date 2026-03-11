@@ -81,7 +81,7 @@ class PasskeyVerificationRequest extends FormRequest
     /**
      * Get the verification options from the session.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function verificationOptions(): PublicKeyCredentialRequestOptions
     {

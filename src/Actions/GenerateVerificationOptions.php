@@ -45,7 +45,7 @@ class GenerateVerificationOptions
         $type = PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY;
 
         return $user->passkeys()->get()->map(
-            fn ($passkey): \Webauthn\PublicKeyCredentialDescriptor => PublicKeyCredentialDescriptor::create(
+            fn ($passkey): PublicKeyCredentialDescriptor => PublicKeyCredentialDescriptor::create(
                 $type,
                 Base64UrlSafe::decodeNoPadding($passkey->credential_id)
             )

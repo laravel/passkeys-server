@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Routing\Controller;
+use Laravel\Passkeys\PasskeysServiceProvider;
 
 arch('strict types')
     ->expect('Laravel\Passkeys')
@@ -12,7 +15,7 @@ arch('no debugging')
 
 arch('controllers')
     ->expect('Laravel\Passkeys\Http\Controllers')
-    ->toExtend(\Illuminate\Routing\Controller::class)
+    ->toExtend(Controller::class)
     ->toHaveSuffix('Controller');
 
 arch('actions are invokable')
@@ -21,19 +24,19 @@ arch('actions are invokable')
 
 arch('exceptions')
     ->expect('Laravel\Passkeys\Exceptions')
-    ->toExtend(\Exception::class)
+    ->toExtend(Exception::class)
     ->toHaveSuffix('Exception');
 
 arch('requests')
     ->expect('Laravel\Passkeys\Http\Requests')
-    ->toExtend(\Illuminate\Foundation\Http\FormRequest::class)
+    ->toExtend(FormRequest::class)
     ->toHaveSuffix('Request');
 
 arch('no direct env calls')
     ->expect('env')
     ->not->toBeUsedIn('Laravel\Passkeys')
     ->ignoring([
-        \Laravel\Passkeys\PasskeysServiceProvider::class,
+        PasskeysServiceProvider::class,
     ]);
 
 arch('tests')

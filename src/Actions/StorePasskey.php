@@ -23,7 +23,7 @@ class StorePasskey
     /**
      * Validate and store a passkey for the user.
      *
-     * @throws \Laravel\Passkeys\Exceptions\InvalidPasskeyException
+     * @throws InvalidPasskeyException
      */
     public function __invoke(
         Authenticatable $user,
@@ -51,7 +51,7 @@ class StorePasskey
     /**
      * Get the authenticator attestation response from the credential.
      *
-     * @throws \Laravel\Passkeys\Exceptions\InvalidPasskeyException
+     * @throws InvalidPasskeyException
      */
     protected function getResponse(PublicKeyCredential $credential): AuthenticatorAttestationResponse
     {
@@ -79,7 +79,7 @@ class StorePasskey
     /**
      * Ensure the credential is not already registered.
      *
-     * @throws \Laravel\Passkeys\Exceptions\InvalidPasskeyException
+     * @throws InvalidPasskeyException
      */
     protected function ensureCredentialIsUnique(PublicKeyCredentialSource $source): void
     {

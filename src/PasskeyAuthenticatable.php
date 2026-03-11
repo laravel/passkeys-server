@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 
 /**
- * @phpstan-require-implements \Laravel\Passkeys\Contracts\PasskeyUser
+ * @phpstan-require-implements PasskeyUser
  */
 trait PasskeyAuthenticatable
 {
     /**
      * Get the passkeys associated with the user.
      *
-     * @return HasMany<PasskeyContract, \Illuminate\Database\Eloquent\Model>
+     * @return HasMany<PasskeyContract, Model>
      *
-     * @phpstan-return HasMany<\Laravel\Passkeys\Passkey, \Illuminate\Database\Eloquent\Model>
+     * @phpstan-return HasMany<Passkey, Model>
      */
     public function passkeys(): HasMany
     {
