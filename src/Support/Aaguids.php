@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Support;
 
-use Illuminate\Support\Facades\File;
-
 /**
  * AAGUID to authenticator name mapping.
  *
@@ -44,7 +42,7 @@ class Aaguids
     public static function all(): array
     {
         /** @var array<string, string> */
-        return static::$aaguids ??= File::json(__DIR__.'/../../resources/aaguids.json');
+        return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
     }
 
     /**
