@@ -27,6 +27,24 @@ it('returns the configured timeout', function (): void {
     expect(Passkeys::timeout())->toBe(30000);
 });
 
+it('returns the configured allowed origins', function (): void {
+    config(['passkeys.allowed_origins' => ['https://example.com', 'https://app.example.com']]);
+
+    expect(Passkeys::allowedOrigins())->toBe(['https://example.com', 'https://app.example.com']);
+});
+
+it('filters out empty allowed origin entries', function (): void {
+    config(['passkeys.allowed_origins' => ['https://example.com', '', null]]);
+
+    expect(Passkeys::allowedOrigins())->toBe(['https://example.com']);
+});
+
+it('throws when no allowed origins are configured', function (): void {
+    config(['passkeys.allowed_origins' => []]);
+
+    Passkeys::allowedOrigins();
+})->throws(RuntimeException::class, 'At least one passkey allowed origin must be configured.');
+
 it('supports custom sign-in authorization callbacks', function (): void {
     $user = User::create([
         'name' => 'John Doe',

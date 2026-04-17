@@ -91,6 +91,9 @@ return [
     // Relying Party ID (defaults to APP_URL host)
     'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
 
+    // Origins allowed to complete WebAuthn ceremonies
+    'allowed_origins' => [config('app.url')],
+
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,
 

@@ -17,6 +17,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Allowed Origins
+    |--------------------------------------------------------------------------
+    |
+    | The origins permitted to complete WebAuthn ceremonies. Passkeys bound
+    | to the relying party ID above will only verify when the browser
+    | reports one of these origins. Defaults to your application URL.
+    |
+    */
+
+    'allowed_origins' => [
+        config('app.url'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | WebAuthn Timeout
     |--------------------------------------------------------------------------
     |
