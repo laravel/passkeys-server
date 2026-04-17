@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-      - '*.x'
+      - "*.x"
   pull_request:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
 
 permissions:
   contents: read
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ ubuntu-22.04, windows-latest ]
+        os: [ubuntu-22.04, windows-latest]
         php: [8.2, 8.3, 8.4, 8.5]
         laravel: [11, 12, 13]
         exclude:
@@ -40,7 +40,7 @@ jobs:
           git config --global core.eol lf
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-           composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
+          composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
 
       - name: Execute tests
         run: composer test
