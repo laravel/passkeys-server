@@ -41,6 +41,7 @@ abstract class TestCase extends BaseTestCase
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('passkey_user_handle', 64)->nullable()->unique();
             $table->rememberToken();
             $table->timestamps();
         });

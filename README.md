@@ -15,6 +15,8 @@ php artisan vendor:publish --tag=passkeys-migrations
 php artisan migrate
 ```
 
+The package publishes two migrations: one creates the `passkeys` table, and one adds a `passkey_user_handle` column to your users table. The handle is a random, stable identifier used to bind passkeys to a user without exposing your primary key to authenticators.
+
 Optionally publish the config file:
 
 ```bash
