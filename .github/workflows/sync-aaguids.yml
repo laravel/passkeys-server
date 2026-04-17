@@ -2,7 +2,7 @@ name: Sync AAGUIDs
 
 on:
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: "0 0 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -14,18 +14,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
 
       - run: php scripts/sync-aaguids.php
 
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
-          title: 'Update AAGUID list'
-          body: 'Automated sync from [passkey-authenticator-aaguids](https://github.com/passkeydeveloper/passkey-authenticator-aaguids).'
+          title: "Update AAGUID list"
+          body: "Automated sync from [passkey-authenticator-aaguids](https://github.com/passkeydeveloper/passkey-authenticator-aaguids)."
           branch: sync-aaguids
-          commit-message: 'sync aaguids'
+          commit-message: "sync aaguids"
           delete-branch: true
