@@ -32,6 +32,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Handle Secret
+    |--------------------------------------------------------------------------
+    |
+    | Secret used to derive a stable WebAuthn user handle from each user model.
+    | Set this explicitly if you rotate your application key.
+    |
+    */
+
+    'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
+
+    /*
+    |--------------------------------------------------------------------------
     | WebAuthn Timeout
     |--------------------------------------------------------------------------
     |
