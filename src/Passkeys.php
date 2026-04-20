@@ -62,6 +62,26 @@ class Passkeys
     }
 
     /**
+     * Get the origins allowed to complete WebAuthn ceremonies.
+     *
+     * @return list<string>
+     */
+    public static function allowedOrigins(): array
+    {
+        /** @var list<string> $origins */
+        $origins = array_values(array_filter(
+            Config::array('passkeys.allowed_origins', []),
+            fn ($origin): bool => is_string($origin) && $origin !== '',
+        ));
+
+        if ($origins === []) {
+            throw new RuntimeException('At least one passkey allowed origin must be configured.');
+        }
+
+        return $origins;
+    }
+
+    /**
      * Get the WebAuthn timeout in milliseconds.
      *
      * @return positive-int
