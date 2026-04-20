@@ -50,23 +50,45 @@ it('falls back to the auth identifier when email is absent', function (): void {
     expect($user->getPasskeyUsername())->toBe((string) $user->id);
 });
 
-it('derives a stable user handle from the auth identifier and secret', function (): void {
+it('returns the same handle across fresh model instances', function (): void {
     config(['passkeys.user_handle_secret' => 'test-secret']);
 
     $user = User::create([
         'name' => 'Alex Müller',
         'email' => 'alex@example.com',
     ]);
+    $handle = $user->getPasskeyUserHandle();
 
-    $expected = hash_hmac(
-        'sha256',
-        $user->getTable().'|'.$user->getAuthIdentifier(),
-        'test-secret',
-        binary: true,
-    );
+    expect(User::find($user->id)->getPasskeyUserHandle())->toBe($handle);
+    expect(strlen($handle))->toBe(32);
+});
 
-    expect($user->getPasskeyUserHandle())->toBe($expected);
-    expect(strlen($user->getPasskeyUserHandle()))->toBe(32);
+it('does not change when non-identifying attributes change', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+    $before = $user->getPasskeyUserHandle();
+
+    $user->update(['name' => 'Alexandra', 'email' => 'new@example.com']);
+
+    expect($user->fresh()->getPasskeyUserHandle())->toBe($before);
+});
+
+it('changes when the secret rotates', function (): void {
+    config(['passkeys.user_handle_secret' => 'secret-a']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+    $before = $user->getPasskeyUserHandle();
+
+    config(['passkeys.user_handle_secret' => 'secret-b']);
+
+    expect($user->getPasskeyUserHandle())->not->toBe($before);
 });
 
 it('uses distinct user handles for different users', function (): void {
