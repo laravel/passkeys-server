@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
 use Laravel\Passkeys\Contracts\PasskeyUser;
-use ParagonIE\ConstantTime\Base64UrlSafe;
 
 /**
  * @phpstan-require-implements PasskeyUser
@@ -38,25 +37,11 @@ trait PasskeyAuthenticatable
     /**
      * Get the unique user handle for WebAuthn.
      *
-     * Returns raw bytes. The handle is generated on first access, persisted
-     * on the user record as a base64url-encoded string, and shared across
-     * all of the user's passkeys.
+     * This should be a stable identifier that does not reveal PII.
      */
     public function getPasskeyUserHandle(): string
     {
-        $encoded = $this->getAttribute('passkey_user_handle');
-
-        if (is_string($encoded) && $encoded !== '') {
-            return Base64UrlSafe::decodeNoPadding($encoded);
-        }
-
-        $handle = random_bytes(32);
-
-        $this->forceFill([
-            'passkey_user_handle' => Base64UrlSafe::encodeUnpadded($handle),
-        ])->save();
-
-        return $handle;
+        return (string) $this->getKey();
     }
 
     /**
