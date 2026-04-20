@@ -53,9 +53,7 @@ class PasskeyVerificationRequest extends FormRequest
                 json_encode($this->input('credential')) ?: '{}',
                 PublicKeyCredential::class
             );
-        } catch (Throwable $throwable) {
-            report($throwable);
-
+        } catch (Throwable) {
             throw ValidationException::withMessages([
                 'credential' => __('Invalid credential format.'),
             ]);
