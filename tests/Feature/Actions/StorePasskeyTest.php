@@ -85,7 +85,7 @@ it('throws exception when credential is already registered', function (): void {
         ->getMock();
 
     $action($user, 'Duplicate Passkey', $credential, $options);
-})->throws(InvalidPasskeyException::class, 'already registered');
+})->throws(InvalidPasskeyException::class, 'Unable to register this passkey.');
 
 it('throws exception when response is not an attestation response', function (): void {
     $user = User::create([

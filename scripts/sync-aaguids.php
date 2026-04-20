@@ -22,6 +22,7 @@ $data = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
 $aaguids = array_map(fn (array $entry) => $entry['name'], $data);
 
 $exported = var_export($aaguids, true);
+$exported = str_replace("\n  ", "\n    ", $exported);
 $exported = substr_replace($exported, '[', 0, strlen('array ('));
 $exported = substr_replace($exported, ']', -1);
 

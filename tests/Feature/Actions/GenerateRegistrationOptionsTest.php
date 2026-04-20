@@ -14,7 +14,7 @@ it('generates registration options with user data', function (): void {
 
     expect($options)->toBeInstanceOf(PublicKeyCredentialCreationOptions::class);
     expect($options->user->name)->toBe('john@example.com');
-    expect($options->user->displayName)->toBe('john@example.com');
+    expect($options->user->displayName)->toBe('John Doe');
 });
 
 it('excludes existing credentials from registration', function (): void {

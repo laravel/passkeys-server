@@ -33,6 +33,8 @@ class User extends Authenticatable implements PasskeyUser
 }
 ```
 
+The trait assumes a standard users schema with `name` and `email` columns, which authenticators show in their UI during registration and account selection. `displayName` falls back from `name` to `email` to the auth identifier, and `username` falls back from `email` to the auth identifier — override `getPasskeyDisplayName()` and `getPasskeyUsername()` if you want different values.
+
 If you want to use custom models, override them in a service provider:
 
 ```php
@@ -90,6 +92,9 @@ The package automatically registers the following routes:
 return [
     // Relying Party ID (defaults to APP_URL host)
     'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+
+    // Origins allowed to complete WebAuthn ceremonies
+    'allowed_origins' => [config('app.url')],
 
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,

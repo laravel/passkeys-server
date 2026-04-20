@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Support;
 
+use Laravel\Passkeys\Passkeys;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
@@ -76,7 +77,7 @@ final class WebAuthn
     {
         $factory = new CeremonyStepManagerFactory;
 
-        $factory->setAllowedOrigins([]);
+        $factory->setAllowedOrigins(Passkeys::allowedOrigins());
 
         $factory->setAttestationStatementSupportManager(
             self::attestationStatementSupportManager()
