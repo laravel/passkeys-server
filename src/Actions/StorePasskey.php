@@ -88,7 +88,7 @@ class StorePasskey
         $exists = Passkeys::passkeyModel()::where('credential_id', $credentialId)->exists();
 
         if ($exists) {
-            throw InvalidPasskeyException::make('This passkey is already registered.');
+            throw InvalidPasskeyException::make('Unable to register this passkey.');
         }
     }
 
