@@ -6,6 +6,7 @@ namespace Laravel\Passkeys;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 
@@ -41,7 +42,12 @@ trait PasskeyAuthenticatable
      */
     public function getPasskeyUserHandle(): string
     {
-        return (string) $this->getKey();
+        return hash_hmac(
+            'sha256',
+            $this->getTable().'|'.$this->getAuthIdentifier(),
+            Config::string('passkeys.user_handle_secret'),
+            binary: true,
+        );
     }
 
     /**
