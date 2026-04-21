@@ -55,14 +55,13 @@ trait PasskeyAuthenticatable
      *
      * Shown prominently in authenticator UIs (registration prompts,
      * account pickers, password manager entries). Falls back from
-     * `name` to `email` to an opaque label derived from the user
-     * handle when those columns are absent.
+     * `name` to `email` to the auth identifier when columns are absent.
      */
     public function getPasskeyDisplayName(): string
     {
         return $this->getAttribute('name')
             ?? $this->getAttribute('email')
-            ?? $this->fallbackPasskeyLabel();
+            ?? (string) $this->getAuthIdentifier();
     }
 
     /**
@@ -70,20 +69,11 @@ trait PasskeyAuthenticatable
      *
      * Used as the account identifier in authenticator UIs, typically
      * rendered as the subtitle beneath the display name. Falls back
-     * to an opaque label derived from the user handle when `email`
-     * is absent.
+     * from `email` to the auth identifier when the column is absent.
      */
     public function getPasskeyUsername(): string
     {
         return $this->getAttribute('email')
-            ?? $this->fallbackPasskeyLabel();
-    }
-
-    /**
-     * An opaque, stable label used when no name or email is available.
-     */
-    protected function fallbackPasskeyLabel(): string
-    {
-        return 'user-'.substr(bin2hex($this->getPasskeyUserHandle()), 0, 10);
+            ?? (string) $this->getAuthIdentifier();
     }
 }

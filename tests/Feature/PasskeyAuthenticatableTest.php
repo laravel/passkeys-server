@@ -38,20 +38,16 @@ it('falls back to email for display name when name is absent', function (): void
     expect($user->getPasskeyUsername())->toBe('only@example.com');
 });
 
-it('falls back to an opaque label when email is absent', function (): void {
-    config(['passkeys.user_handle_secret' => 'test-secret']);
-
+it('falls back to the auth identifier when email is absent', function (): void {
     Schema::create('bare_users', function (Blueprint $table): void {
         $table->id();
         $table->timestamps();
     });
 
     $user = BareUser::create();
-    $expected = 'user-'.substr(bin2hex($user->getPasskeyUserHandle()), 0, 10);
 
-    expect($user->getPasskeyDisplayName())->toBe($expected);
-    expect($user->getPasskeyUsername())->toBe($expected);
-    expect($expected)->not->toContain((string) $user->id);
+    expect($user->getPasskeyDisplayName())->toBe((string) $user->id);
+    expect($user->getPasskeyUsername())->toBe((string) $user->id);
 });
 
 it('returns the same handle across fresh model instances', function (): void {
