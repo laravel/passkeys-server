@@ -2,6 +2,7 @@
 
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Tests\User;
+use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 
 it('generates registration options with user data', function (): void {
@@ -32,4 +33,28 @@ it('excludes existing credentials from registration', function (): void {
     $options = app(GenerateRegistrationOptions::class)($user);
 
     expect($options->excludeCredentials)->toHaveCount(1);
+});
+
+it('allows overriding authenticator selection with a custom action binding', function (): void {
+    $user = User::create([
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+    ]);
+
+    app()->bind(GenerateRegistrationOptions::class, fn () => new class extends GenerateRegistrationOptions
+    {
+        public function authenticatorSelection(): AuthenticatorSelectionCriteria
+        {
+            return AuthenticatorSelectionCriteria::create(
+                authenticatorAttachment: AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_PLATFORM,
+                userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
+                residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
+            );
+        }
+    });
+
+    $options = app(GenerateRegistrationOptions::class)($user);
+
+    expect($options->authenticatorSelection->authenticatorAttachment)
+        ->toBe(AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_PLATFORM);
 });
