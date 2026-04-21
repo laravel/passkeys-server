@@ -179,7 +179,7 @@ use Webauthn\AuthenticatorSelectionCriteria;
 
 class CustomRegistrationOptions extends GenerateRegistrationOptions
 {
-    protected function authenticatorSelection(): AuthenticatorSelectionCriteria
+    public function authenticatorSelection(): AuthenticatorSelectionCriteria
     {
         // Only allow platform authenticators (Touch ID, Face ID, Windows Hello)
         return AuthenticatorSelectionCriteria::create(

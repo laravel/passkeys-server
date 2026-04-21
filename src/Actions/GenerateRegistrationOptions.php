@@ -71,7 +71,7 @@ class GenerateRegistrationOptions
      *
      * @see https://www.w3.org/TR/webauthn-3/#dictdef-authenticatorselectioncriteria
      */
-    protected function authenticatorSelection(): AuthenticatorSelectionCriteria
+    public function authenticatorSelection(): AuthenticatorSelectionCriteria
     {
         // Allow any authenticator: built-in (Touch ID, Windows Hello) or external (YubiKey).
         $crossPlatform = AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_NO_PREFERENCE;
@@ -95,7 +95,7 @@ class GenerateRegistrationOptions
      *
      * @return array<PublicKeyCredentialDescriptor>
      */
-    protected function excludedCredentials(PasskeyUser $user): array
+    public function excludedCredentials(PasskeyUser $user): array
     {
         $type = PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY;
 
@@ -112,7 +112,7 @@ class GenerateRegistrationOptions
      *
      * @return array<PublicKeyCredentialParameters>
      */
-    protected function supportedAlgorithms(): array
+    public function supportedAlgorithms(): array
     {
         $type = PublicKeyCredentialDescriptor::CREDENTIAL_TYPE_PUBLIC_KEY;
 

@@ -95,7 +95,7 @@ class StorePasskey
     /**
      * Create the passkey record for the user.
      */
-    protected function createPasskey(
+    public function createPasskey(
         PasskeyUser $user,
         string $name,
         PublicKeyCredentialSource $source

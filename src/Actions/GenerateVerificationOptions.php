@@ -36,7 +36,7 @@ class GenerateVerificationOptions
      *
      * @return array<PublicKeyCredentialDescriptor>
      */
-    protected function allowCredentials(?PasskeyUser $user): array
+    public function allowCredentials(?PasskeyUser $user): array
     {
         if (! $user instanceof PasskeyUser) {
             return [];

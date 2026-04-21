@@ -61,7 +61,7 @@ class VerifyPasskey
      *
      * @throws InvalidPasskeyException
      */
-    protected function getPasskey(PublicKeyCredential $credential): Passkey
+    public function getPasskey(PublicKeyCredential $credential): Passkey
     {
         $credentialId = Base64UrlSafe::encodeUnpadded($credential->rawId);
 
@@ -74,7 +74,7 @@ class VerifyPasskey
      *
      * @throws InvalidPasskeyException
      */
-    protected function ensurePasskeyBelongsToUser(Passkey $passkey, ?PasskeyUser $user): void
+    public function ensurePasskeyBelongsToUser(Passkey $passkey, ?PasskeyUser $user): void
     {
         if (! $user instanceof PasskeyUser) {
             return;
@@ -115,7 +115,7 @@ class VerifyPasskey
      * The credential must be persisted after each use to store the updated
      * signature counter, which is used to detect cloned authenticators.
      */
-    protected function updatePasskey(Passkey $passkey, PublicKeyCredentialSource $source): void
+    public function updatePasskey(Passkey $passkey, PublicKeyCredentialSource $source): void
     {
         $passkey->forceFill([
             'credential' => json_decode(WebAuthn::toJson($source), true, flags: JSON_THROW_ON_ERROR),
