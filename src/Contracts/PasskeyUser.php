@@ -25,6 +25,13 @@ interface PasskeyUser extends Authenticatable
     public function hasPasskeysEnabled(): bool;
 
     /**
+     * Get the value of the model's primary key.
+     *
+     * @return mixed
+     */
+    public function getKey();
+
+    /**
      * Get the unique user handle for WebAuthn.
      */
     public function getPasskeyUserHandle(): string;
