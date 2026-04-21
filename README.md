@@ -228,7 +228,7 @@ Available response contracts:
 
 ### Custom Passkey Model
 
-Extend the base model (or implement `Laravel\Passkeys\Contracts\Passkey`):
+Extend the base model:
 
 ```php
 use Laravel\Passkeys\Passkey as BasePasskey;

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
-use Laravel\Passkeys\Contracts\Passkey as PasskeyContract;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\Aaguids;
 
@@ -27,7 +26,7 @@ use Laravel\Passkeys\Support\Aaguids;
  * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
  */
-class Passkey extends Model implements PasskeyContract
+class Passkey extends Model
 {
     /**
      * The attributes that are mass assignable.
