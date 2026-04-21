@@ -80,7 +80,7 @@ class VerifyPasskey
             return;
         }
 
-        $identifier = $user->getAuthIdentifier();
+        $identifier = $user->getKey();
 
         if (! is_scalar($identifier) || (string) $passkey->user_id !== (string) $identifier) {
             throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');

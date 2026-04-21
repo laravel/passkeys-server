@@ -96,6 +96,9 @@ return [
     // Origins allowed to complete WebAuthn ceremonies
     'allowed_origins' => [config('app.url')],
 
+    // Secret for deriving stable opaque user handles
+    'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
+
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,
 

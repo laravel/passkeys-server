@@ -31,12 +31,10 @@ it('verifies a passkey and returns it', function (): void {
         'credential' => json_decode(WebAuthn::toJson($source), true),
     ]);
 
-    $assertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
-
-    $credential = PublicKeyCredential::create(
+    $assertion = PublicKeyCredential::create(
         type: 'public-key',
         rawId: $credentialId,
-        response: $assertionResponse
+        response: Mockery::mock(AuthenticatorAssertionResponse::class),
     );
 
     $options = createRequestOptions();
@@ -51,7 +49,7 @@ it('verifies a passkey and returns it', function (): void {
         ->andReturn($updatedSource)
         ->getMock();
 
-    $result = $action($credential, $options);
+    $result = $action($assertion, $options);
 
     expect($result)->toBeInstanceOf(Passkey::class);
     expect($result->id)->toBe($passkey->id);
@@ -64,31 +62,23 @@ it('verifies a passkey and returns it', function (): void {
 });
 
 it('throws exception when response is not an assertion response', function (): void {
-    $attestationResponse = Mockery::mock(AuthenticatorAttestationResponse::class);
-
-    $credential = PublicKeyCredential::create(
+    $assertion = PublicKeyCredential::create(
         type: 'public-key',
         rawId: 'test-raw-id',
-        response: $attestationResponse
+        response: Mockery::mock(AuthenticatorAttestationResponse::class),
     );
 
-    $options = createRequestOptions();
-
-    app(VerifyPasskey::class)($credential, $options);
+    app(VerifyPasskey::class)($assertion, createRequestOptions());
 })->throws(InvalidPasskeyException::class, 'Unable to verify passkey');
 
 it('throws exception when passkey is not found', function (): void {
-    $assertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
-
-    $credential = PublicKeyCredential::create(
+    $assertion = PublicKeyCredential::create(
         type: 'public-key',
         rawId: random_bytes(16),
-        response: $assertionResponse
+        response: Mockery::mock(AuthenticatorAssertionResponse::class),
     );
 
-    $options = createRequestOptions();
-
-    app(VerifyPasskey::class)($credential, $options);
+    app(VerifyPasskey::class)($assertion, createRequestOptions());
 })->throws(InvalidPasskeyException::class, 'Passkey not recognized');
 
 it('throws exception when passkey does not belong to expected user', function (): void {
@@ -112,15 +102,11 @@ it('throws exception when passkey does not belong to expected user', function ()
         'credential' => json_decode(WebAuthn::toJson($source), true),
     ]);
 
-    $assertionResponse = Mockery::mock(AuthenticatorAssertionResponse::class);
-
-    $credential = PublicKeyCredential::create(
+    $assertion = PublicKeyCredential::create(
         type: 'public-key',
         rawId: $credentialId,
-        response: $assertionResponse
+        response: Mockery::mock(AuthenticatorAssertionResponse::class),
     );
-
-    $options = createRequestOptions();
 
     $action = Mockery::mock(VerifyPasskey::class)
         ->makePartial()
@@ -129,5 +115,35 @@ it('throws exception when passkey does not belong to expected user', function ()
         ->never()
         ->getMock();
 
-    $action($credential, $options, $otherUser);
+    $action($assertion, createRequestOptions(), $otherUser);
 })->throws(InvalidPasskeyException::class, 'Passkey not recognized');
+
+it('verifies an existing passkey after user handle secret rotation', function (): void {
+    config()->set('passkeys.allowed_origins', ['https://localhost']);
+    config()->set('passkeys.relying_party_id', 'localhost');
+    config()->set('passkeys.user_handle_secret', 'initial-user-handle-secret');
+
+    $user = User::create(['name' => 'John Doe', 'email' => 'john@example.com']);
+    $credentialId = random_bytes(16);
+    $initialUserHandle = $user->getPasskeyUserHandle();
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'My MacBook',
+        'credential_id' => Base64UrlSafe::encodeUnpadded($credentialId),
+        'credential' => json_decode(WebAuthn::toJson(createCredentialSource($initialUserHandle, $credentialId)), true),
+    ]);
+
+    config()->set('passkeys.user_handle_secret', 'rotated-user-handle-secret');
+
+    $options = createRequestOptions();
+    $assertion = PublicKeyCredential::create(
+        type: 'public-key',
+        rawId: $credentialId,
+        response: createSignedAssertionResponse($options->challenge, 'https://localhost', signCount: 6, rpId: 'localhost'),
+    );
+
+    $result = app(VerifyPasskey::class)($assertion, $options, $user);
+
+    expect($result->id)->toBe($passkey->id);
+    expect(Base64UrlSafe::decodeNoPadding($result->refresh()->credential['userHandle']))->toBe($initialUserHandle);
+});

@@ -50,6 +50,74 @@ it('falls back to the auth identifier when email is absent', function (): void {
     expect($user->getPasskeyUsername())->toBe((string) $user->id);
 });
 
+it('returns the same handle across fresh model instances', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+    $handle = $user->getPasskeyUserHandle();
+
+    expect(User::find($user->id)->getPasskeyUserHandle())->toBe($handle);
+    expect(strlen($handle))->toBe(32);
+});
+
+it('does not change when non-identifying attributes change', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+    $before = $user->getPasskeyUserHandle();
+
+    $user->update(['name' => 'Alexandra', 'email' => 'new@example.com']);
+
+    expect($user->fresh()->getPasskeyUserHandle())->toBe($before);
+});
+
+it('changes when the secret rotates', function (): void {
+    config(['passkeys.user_handle_secret' => 'secret-a']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+    $before = $user->getPasskeyUserHandle();
+
+    config(['passkeys.user_handle_secret' => 'secret-b']);
+
+    expect($user->getPasskeyUserHandle())->not->toBe($before);
+});
+
+it('uses distinct user handles for different users', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    $one = User::create(['name' => 'One', 'email' => 'one@example.com']);
+    $two = User::create(['name' => 'Two', 'email' => 'two@example.com']);
+
+    expect($one->getPasskeyUserHandle())->not->toBe($two->getPasskeyUserHandle());
+});
+
+it('includes the model table when deriving user handles', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    Schema::create('admin_users', function (Blueprint $table): void {
+        $table->id();
+        $table->timestamps();
+    });
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+
+    $admin = AdminUser::create();
+
+    expect($user->getPasskeyUserHandle())->not->toBe($admin->getPasskeyUserHandle());
+});
+
 class MinimalUser extends Authenticatable implements PasskeyUser
 {
     use PasskeyAuthenticatable;
@@ -64,6 +132,15 @@ class BareUser extends Authenticatable implements PasskeyUser
     use PasskeyAuthenticatable;
 
     protected $table = 'bare_users';
+
+    protected $guarded = [];
+}
+
+class AdminUser extends Authenticatable implements PasskeyUser
+{
+    use PasskeyAuthenticatable;
+
+    protected $table = 'admin_users';
 
     protected $guarded = [];
 }

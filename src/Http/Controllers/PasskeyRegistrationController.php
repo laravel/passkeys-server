@@ -15,9 +15,11 @@ use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Contracts\PasskeyDeletedResponse;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse;
+use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Http\Requests\PasskeyRegistrationRequest;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Support\WebAuthn;
+use RuntimeException;
 
 class PasskeyRegistrationController extends Controller
 {
@@ -70,7 +72,11 @@ class PasskeyRegistrationController extends Controller
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
             ?? throw new AuthenticationException;
 
-        abort_unless($passkey->user_id === $user->getAuthIdentifier(), 403);
+        if (! $user instanceof PasskeyUser) {
+            throw new RuntimeException('User model must implement the PasskeyUser contract.');
+        }
+
+        abort_unless($passkey->user_id === $user->getKey(), 403);
 
         $deletePasskey($user, $passkey);
 
