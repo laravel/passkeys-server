@@ -70,7 +70,7 @@ class PasskeyRegistrationController extends Controller
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
             ?? throw new AuthenticationException;
 
-        abort_unless($passkey->user_id === $user->getAuthIdentifier(), 403);
+        abort_unless($passkey->user_id === $user->getKey(), 403);
 
         $deletePasskey($user, $passkey);
 
