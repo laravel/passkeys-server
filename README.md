@@ -112,7 +112,7 @@ return [
     'throttle' => 'throttle:6,1',
 
     // Redirect after login
-    'redirect' => '/dashboard',
+    'redirect' => '/',
 ];
 ```
 

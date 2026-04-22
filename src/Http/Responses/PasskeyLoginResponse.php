@@ -21,10 +21,10 @@ class PasskeyLoginResponse implements PasskeyLoginResponseContract
     {
         if ($request->wantsJson()) {
             return new JsonResponse([
-                'redirect' => redirect()->intended(config('passkeys.redirect', '/dashboard'))->getTargetUrl(),
+                'redirect' => redirect()->intended(config('passkeys.redirect', '/'))->getTargetUrl(),
             ], 200);
         }
 
-        return redirect()->intended(config('passkeys.redirect', '/dashboard'));
+        return redirect()->intended(config('passkeys.redirect', '/'));
     }
 }

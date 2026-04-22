@@ -99,6 +99,6 @@ return [
     |
     */
 
-    'redirect' => '/dashboard',
+    'redirect' => '/',
 
 ];
