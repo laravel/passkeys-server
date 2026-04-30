@@ -1,9 +1,17 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
+use Laravel\Passkeys\PasskeysServiceProvider;
 use Laravel\Passkeys\Tests\User;
+
+afterEach(function (): void {
+    Passkeys::usePasskeyModel(Passkey::class);
+    (new ReflectionProperty(Passkeys::class, 'registersRoutes'))->setValue(null, true);
+});
 
 it('returns registration options for authenticated user', function (): void {
     $user = User::create([
@@ -126,6 +134,51 @@ it('deletes a passkey for the authenticated user', function (): void {
     expect(Passkey::find($passkey->id))->toBeNull();
 });
 
+it('resolves passkey route bindings with the configured passkey model', function (): void {
+    Passkeys::usePasskeyModel(CustomRouteKeyPasskey::class);
+
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlk',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson("/user/passkeys/{$passkey->credential_id}")
+        ->assertOk()
+        ->assertJson(['status' => 'passkey-deleted']);
+
+    expect(CustomRouteKeyPasskey::find($passkey->id))->toBeNull();
+});
+
+it('resolves passkey route bindings when package routes are ignored', function (): void {
+    Passkeys::ignoreRoutes();
+    (new PasskeysServiceProvider($this->app))->boot();
+
+    Passkeys::usePasskeyModel(CustomRouteKeyPasskey::class);
+
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jdXN0b20tY3JlZGVudGlhbC1pZA',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $binding = Route::getBindingCallback('passkey');
+
+    expect($binding($passkey->credential_id))->toBeInstanceOf(CustomRouteKeyPasskey::class)
+        ->id->toBe($passkey->id);
+});
+
 it("forbids deleting another user's passkey", function (): void {
     $user = User::create([
         'name' => 'Test User',
@@ -147,3 +200,13 @@ it("forbids deleting another user's passkey", function (): void {
         ->deleteJson("/user/passkeys/{$passkey->id}")
         ->assertForbidden();
 });
+
+class CustomRouteKeyPasskey extends Passkey
+{
+    protected $table = 'passkeys';
+
+    public function getRouteKeyName(): string
+    {
+        return 'credential_id';
+    }
+}

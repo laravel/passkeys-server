@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passkeys\Contracts\PasskeyConfirmationResponse as PasskeyConfirmationResponseContract;
@@ -37,8 +38,7 @@ class PasskeysServiceProvider extends ServiceProvider
     {
         $this->registerPublishing();
         $this->registerRoutes();
-
-        Route::model('passkey', Passkeys::passkeyModel());
+        $this->registerRouteBindings();
     }
 
     /**
@@ -67,5 +67,23 @@ class PasskeysServiceProvider extends ServiceProvider
         if (Passkeys::shouldRegisterRoutes()) {
             $this->loadRoutesFrom(__DIR__.'/../routes/routes.php');
         }
+    }
+
+    /**
+     * Register the package route bindings.
+     */
+    protected function registerRouteBindings(): void
+    {
+        Route::bind('passkey', function (string $value): Passkey {
+            $model = Passkeys::passkeyModel();
+
+            $passkey = app($model)->resolveRouteBinding($value);
+
+            if (! $passkey instanceof Passkey) {
+                throw (new ModelNotFoundException)->setModel($model, [$value]);
+            }
+
+            return $passkey;
+        });
     }
 }
