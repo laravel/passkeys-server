@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Actions;
 
+use Illuminate\Support\Facades\DB;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Events\PasskeyVerified;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
@@ -29,17 +30,20 @@ class VerifyPasskey
         ?PasskeyUser $user = null
     ): Passkey {
         $response = $this->getResponse($credential);
-        $passkey = $this->getPasskey($credential);
 
-        $this->ensurePasskeyBelongsToUser($passkey, $user);
+        return DB::transaction(function () use ($credential, $options, $user, $response) {
+            $passkey = $this->getPasskey($credential, lock: true);
 
-        $source = $this->validate($response, $passkey, $options);
+            $this->ensurePasskeyBelongsToUser($passkey, $user);
 
-        $this->updatePasskey($passkey, $source);
+            $source = $this->validate($response, $passkey, $options);
 
-        PasskeyVerified::dispatch($passkey->user, $passkey);
+            $this->updatePasskey($passkey, $source);
 
-        return $passkey;
+            PasskeyVerified::dispatch($passkey->user, $passkey);
+
+            return $passkey;
+        });
     }
 
     /**
@@ -61,11 +65,17 @@ class VerifyPasskey
      *
      * @throws InvalidPasskeyException
      */
-    public function getPasskey(PublicKeyCredential $credential): Passkey
+    public function getPasskey(PublicKeyCredential $credential, bool $lock = false): Passkey
     {
         $credentialId = Base64UrlSafe::encodeUnpadded($credential->rawId);
 
-        return Passkeys::passkeyModel()::where('credential_id', $credentialId)->first()
+        $query = Passkeys::passkeyModel()::where('credential_id', $credentialId);
+
+        if ($lock) {
+            $query->lockForUpdate();
+        }
+
+        return $query->first()
             ?? throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
     }
 
