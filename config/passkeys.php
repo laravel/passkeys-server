@@ -81,6 +81,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Passkeys Management Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the middleware applied to passkey management routes
+    | that create or delete passkeys. By default, Laravel's password
+    | confirmation middleware is used.
+    |
+    */
+
+    'management_middleware' => ['password.confirm'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Passkeys Throttling
     |--------------------------------------------------------------------------
     |
