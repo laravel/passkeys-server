@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\DeletePasskey;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
+use Laravel\Passkeys\Actions\UpdatePasskey;
 use Laravel\Passkeys\Contracts\PasskeyDeletedResponse;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse;
 use Laravel\Passkeys\Contracts\PasskeyUpdatedResponse;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Http\Requests\PasskeyRegistrationRequest;
+use Laravel\Passkeys\Http\Requests\PasskeyUpdateRequest;
 use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Support\WebAuthn;
 use RuntimeException;
@@ -66,8 +68,11 @@ class PasskeyRegistrationController extends Controller
     /**
      * Update the name of a passkey for the authenticated user.
      */
-    public function update(Request $request, Passkey $passkey): PasskeyUpdatedResponse
-    {
+    public function update(
+        PasskeyUpdateRequest $request,
+        Passkey $passkey,
+        UpdatePasskey $updatePasskey
+    ): PasskeyUpdatedResponse {
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
             ?? throw new AuthenticationException;
 
@@ -77,11 +82,7 @@ class PasskeyRegistrationController extends Controller
 
         abort_unless($passkey->user_id === $user->getKey(), 403);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-        ]);
-
-        $passkey->forceFill(['name' => $validated['name']])->save();
+        $passkey = $updatePasskey($user, $passkey, $request->string('name')->toString());
 
         return app(PasskeyUpdatedResponse::class)->withPasskey($passkey);
     }

@@ -82,6 +82,7 @@ The package automatically registers the following routes:
 ### Authenticated Routes (Management)
 - `GET /user/passkeys/options` - Get registration options
 - `POST /user/passkeys` - Store new passkey
+- `PUT /user/passkeys/{passkey}` - Update passkey name
 - `DELETE /user/passkeys/{passkey}` - Delete passkey
 
 ## Configuration
@@ -122,6 +123,7 @@ The package fires the following events:
 
 - `PasskeyRegistered` - When a new passkey is registered
 - `PasskeyVerified` - When a user verifies with a passkey
+- `PasskeyUpdated` - When a passkey is renamed
 - `PasskeyDeleted` - When a passkey is deleted
 
 ## Customization
@@ -199,6 +201,7 @@ Available actions:
 - `GenerateVerificationOptions`
 - `StorePasskey`
 - `VerifyPasskey`
+- `UpdatePasskey`
 - `DeletePasskey`
 
 ### Custom Responses
@@ -224,6 +227,7 @@ Available response contracts:
 - `PasskeyLoginResponse` - After successful login
 - `PasskeyConfirmationResponse` - After successful confirmation
 - `PasskeyRegistrationResponse` - After successful registration
+- `PasskeyUpdatedResponse` - After passkey rename
 - `PasskeyDeletedResponse` - After passkey deletion
 
 ### Custom Passkey Model
