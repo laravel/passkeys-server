@@ -10,10 +10,12 @@ use Laravel\Passkeys\Contracts\PasskeyConfirmationResponse as PasskeyConfirmatio
 use Laravel\Passkeys\Contracts\PasskeyDeletedResponse as PasskeyDeletedResponseContract;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse as PasskeyLoginResponseContract;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse as PasskeyRegistrationResponseContract;
+use Laravel\Passkeys\Contracts\PasskeyUpdatedResponse as PasskeyUpdatedResponseContract;
 use Laravel\Passkeys\Http\Responses\PasskeyConfirmationResponse;
 use Laravel\Passkeys\Http\Responses\PasskeyDeletedResponse;
 use Laravel\Passkeys\Http\Responses\PasskeyLoginResponse;
 use Laravel\Passkeys\Http\Responses\PasskeyRegistrationResponse;
+use Laravel\Passkeys\Http\Responses\PasskeyUpdatedResponse;
 
 class PasskeysServiceProvider extends ServiceProvider
 {
@@ -27,6 +29,7 @@ class PasskeysServiceProvider extends ServiceProvider
         $this->app->singleton(PasskeyLoginResponseContract::class, PasskeyLoginResponse::class);
         $this->app->singleton(PasskeyConfirmationResponseContract::class, PasskeyConfirmationResponse::class);
         $this->app->singleton(PasskeyRegistrationResponseContract::class, PasskeyRegistrationResponse::class);
+        $this->app->singleton(PasskeyUpdatedResponseContract::class, PasskeyUpdatedResponse::class);
         $this->app->singleton(PasskeyDeletedResponseContract::class, PasskeyDeletedResponse::class);
     }
 

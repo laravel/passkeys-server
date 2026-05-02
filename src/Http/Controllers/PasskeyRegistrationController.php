@@ -15,6 +15,7 @@ use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Contracts\PasskeyDeletedResponse;
 use Laravel\Passkeys\Contracts\PasskeyRegistrationResponse;
+use Laravel\Passkeys\Contracts\PasskeyUpdatedResponse;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Http\Requests\PasskeyRegistrationRequest;
 use Laravel\Passkeys\Passkey;
@@ -65,7 +66,7 @@ class PasskeyRegistrationController extends Controller
     /**
      * Update the name of a passkey for the authenticated user.
      */
-    public function update(Request $request, Passkey $passkey): JsonResponse
+    public function update(Request $request, Passkey $passkey): PasskeyUpdatedResponse
     {
         $user = Auth::guard(Config::string('passkeys.guard'))->user()
             ?? throw new AuthenticationException;
@@ -82,7 +83,7 @@ class PasskeyRegistrationController extends Controller
 
         $passkey->forceFill(['name' => $validated['name']])->save();
 
-        return response()->json(['passkey' => $passkey]);
+        return app(PasskeyUpdatedResponse::class)->withPasskey($passkey);
     }
 
     /**

@@ -121,7 +121,11 @@ it('updates the name of a passkey for the authenticated user', function (): void
     $this->actingAs($user)
         ->putJson("/user/passkeys/{$passkey->id}", ['name' => 'Renamed Passkey'])
         ->assertOk()
-        ->assertJsonPath('passkey.name', 'Renamed Passkey');
+        ->assertJson([
+            'status' => 'passkey-updated',
+            'id' => (string) $passkey->id,
+            'name' => 'Renamed Passkey',
+        ]);
 
     expect($passkey->fresh()->name)->toBe('Renamed Passkey');
 });
