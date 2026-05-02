@@ -37,6 +37,10 @@ Route::group(['middleware' => config('passkeys.middleware')], function () {
             ->middleware($middleware())
             ->name('passkey.store');
 
+        Route::put('/user/passkeys/{passkey}', [PasskeyRegistrationController::class, 'update'])
+            ->middleware($middleware())
+            ->name('passkey.update');
+
         Route::delete('/user/passkeys/{passkey}', [PasskeyRegistrationController::class, 'destroy'])
             ->name('passkey.destroy');
     });

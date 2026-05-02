@@ -63,6 +63,29 @@ class PasskeyRegistrationController extends Controller
     }
 
     /**
+     * Update the name of a passkey for the authenticated user.
+     */
+    public function update(Request $request, Passkey $passkey): JsonResponse
+    {
+        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+            ?? throw new AuthenticationException;
+
+        if (! $user instanceof PasskeyUser) {
+            throw new RuntimeException('User model must implement the PasskeyUser contract.');
+        }
+
+        abort_unless($passkey->user_id === $user->getKey(), 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $passkey->forceFill(['name' => $validated['name']])->save();
+
+        return response()->json(['passkey' => $passkey]);
+    }
+
+    /**
      * Delete a passkey for the authenticated user.
      */
     public function destroy(

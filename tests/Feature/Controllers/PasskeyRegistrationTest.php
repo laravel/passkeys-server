@@ -101,6 +101,73 @@ it('returns validation error when session has expired', function (): void {
         ->assertJsonValidationErrors(['credential']);
 });
 
+it('requires authentication to update a passkey', function (): void {
+    $this->putJson('/user/passkeys/1', ['name' => 'Renamed'])
+        ->assertUnauthorized();
+});
+
+it('updates the name of a passkey for the authenticated user', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Original Name',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlkLXVwZGF0ZQ',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->putJson("/user/passkeys/{$passkey->id}", ['name' => 'Renamed Passkey'])
+        ->assertOk()
+        ->assertJsonPath('passkey.name', 'Renamed Passkey');
+
+    expect($passkey->fresh()->name)->toBe('Renamed Passkey');
+});
+
+it('requires a name when updating a passkey', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Original Name',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlkLXVwZGF0ZS12YWxpZGF0ZQ',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->putJson("/user/passkeys/{$passkey->id}", [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['name']);
+});
+
+it("forbids updating another user's passkey", function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $otherUser = User::create([
+        'name' => 'Other User',
+        'email' => 'other@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlkLXVwZGF0ZS1vdGhlcg',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($otherUser)
+        ->putJson("/user/passkeys/{$passkey->id}", ['name' => 'Hacked'])
+        ->assertForbidden();
+
+    expect($passkey->fresh()->name)->toBe('Test Passkey');
+});
+
 it('requires authentication to delete a passkey', function (): void {
     $this->deleteJson('/user/passkeys/1')
         ->assertUnauthorized();
