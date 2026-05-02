@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Support;
 
 /**
- * AAGUID to authenticator name mapping.
+ * AAGUID to authenticator metadata mapping.
  *
  * @see https://github.com/passkeydeveloper/passkey-authenticator-aaguids
+ *
+ * @phpstan-type AaguidEntry array{name: string, icon_light: string|null, icon_dark: string|null}
  */
 class Aaguids
 {
     /**
-     * The cached AAGUID to name mapping.
+     * The cached AAGUID metadata mapping.
      *
-     * @var array<string, string>|null
+     * @var array<string, AaguidEntry>|null
      */
     protected static ?array $aaguids = null;
 
@@ -23,7 +25,23 @@ class Aaguids
      */
     public static function labelFor(string $aaguid): ?string
     {
-        return static::all()[$aaguid] ?? null;
+        return static::all()[$aaguid]['name'] ?? null;
+    }
+
+    /**
+     * Get the light-mode icon (data URI) for the given AAGUID.
+     */
+    public static function iconLightFor(string $aaguid): ?string
+    {
+        return static::all()[$aaguid]['icon_light'] ?? null;
+    }
+
+    /**
+     * Get the dark-mode icon (data URI) for the given AAGUID.
+     */
+    public static function iconDarkFor(string $aaguid): ?string
+    {
+        return static::all()[$aaguid]['icon_dark'] ?? null;
     }
 
     /**
@@ -35,13 +53,13 @@ class Aaguids
     }
 
     /**
-     * Get all AAGUID to name mappings.
+     * Get all AAGUID metadata mappings.
      *
-     * @return array<string, string>
+     * @return array<string, AaguidEntry>
      */
     public static function all(): array
     {
-        /** @var array<string, string> */
+        /** @var array<string, AaguidEntry> */
         return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
     }
 

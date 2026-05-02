@@ -25,6 +25,8 @@ use Laravel\Passkeys\Support\Aaguids;
  * @property Carbon|null $updated_at
  * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
+ * @property-read string|null $authenticator_icon_light
+ * @property-read string|null $authenticator_icon_dark
  */
 class Passkey extends Model
 {
@@ -46,6 +48,8 @@ class Passkey extends Model
      */
     protected $appends = [
         'authenticator',
+        'authenticator_icon_light',
+        'authenticator_icon_dark',
     ];
 
     /**
@@ -79,14 +83,36 @@ class Passkey extends Model
      */
     protected function authenticator(): Attribute
     {
-        return Attribute::get(function (): ?string {
-            $aaguid = $this->credential['aaguid'] ?? null;
+        return Attribute::get(fn (): ?string => Aaguids::labelFor($this->resolvedAaguid() ?? ''));
+    }
 
-            if (! is_string($aaguid) || $aaguid === Aaguids::unknown()) {
-                return null;
-            }
+    /**
+     * Get the light-mode authenticator icon (data URI) based on the AAGUID.
+     */
+    protected function authenticatorIconLight(): Attribute
+    {
+        return Attribute::get(fn (): ?string => Aaguids::iconLightFor($this->resolvedAaguid() ?? ''));
+    }
 
-            return Aaguids::labelFor($aaguid);
-        });
+    /**
+     * Get the dark-mode authenticator icon (data URI) based on the AAGUID.
+     */
+    protected function authenticatorIconDark(): Attribute
+    {
+        return Attribute::get(fn (): ?string => Aaguids::iconDarkFor($this->resolvedAaguid() ?? ''));
+    }
+
+    /**
+     * Get the AAGUID stored on the credential, ignoring the unknown sentinel.
+     */
+    protected function resolvedAaguid(): ?string
+    {
+        $aaguid = $this->credential['aaguid'] ?? null;
+
+        if (! is_string($aaguid) || $aaguid === Aaguids::unknown()) {
+            return null;
+        }
+
+        return $aaguid;
     }
 }
