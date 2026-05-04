@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Laravel\Passkeys\Support;
 
+use InvalidArgumentException;
+
 /**
  * AAGUID to authenticator metadata mapping.
  *
@@ -21,27 +23,30 @@ class Aaguids
     protected static ?array $aaguids = null;
 
     /**
+     * The cached AAGUID to name mapping.
+     *
+     * @var array<string, string>|null
+     */
+    protected static ?array $labels = null;
+
+    /**
      * Get the authenticator label for the given AAGUID.
      */
     public static function labelFor(string $aaguid): ?string
     {
-        return static::all()[$aaguid]['name'] ?? null;
+        return static::all()[$aaguid] ?? null;
     }
 
     /**
-     * Get the light-mode icon (data URI) for the given AAGUID.
+     * Get the authenticator icon (data URI) for the given AAGUID.
      */
-    public static function iconLightFor(string $aaguid): ?string
+    public static function iconFor(string $aaguid, string $theme = 'light'): ?string
     {
-        return static::all()[$aaguid]['icon_light'] ?? null;
-    }
+        if (! in_array($theme, ['light', 'dark'], true)) {
+            throw new InvalidArgumentException("Unsupported icon theme [{$theme}]. Expected 'light' or 'dark'.");
+        }
 
-    /**
-     * Get the dark-mode icon (data URI) for the given AAGUID.
-     */
-    public static function iconDarkFor(string $aaguid): ?string
-    {
-        return static::all()[$aaguid]['icon_dark'] ?? null;
+        return static::metadata()[$aaguid]['icon_'.$theme] ?? null;
     }
 
     /**
@@ -53,14 +58,16 @@ class Aaguids
     }
 
     /**
-     * Get all AAGUID metadata mappings.
+     * Get all AAGUID to name mappings.
      *
-     * @return array<string, AaguidEntry>
+     * @return array<string, string>
      */
     public static function all(): array
     {
-        /** @var array<string, AaguidEntry> */
-        return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
+        return static::$labels ??= array_map(
+            static fn (array $entry): string => $entry['name'],
+            static::metadata(),
+        );
     }
 
     /**
@@ -69,5 +76,16 @@ class Aaguids
     public static function flush(): void
     {
         static::$aaguids = null;
+        static::$labels = null;
+    }
+
+    /**
+     * Get the full AAGUID metadata mapping.
+     *
+     * @return array<string, AaguidEntry>
+     */
+    protected static function metadata(): array
+    {
+        return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
     }
 }
