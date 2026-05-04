@@ -108,6 +108,9 @@ return [
     // Routes middleware
     'middleware' => ['web'],
 
+    // Middleware applied to passkey management routes (set to [] to disable)
+    'management_middleware' => ['password.confirm'],
+
     // Throttle middleware (null to disable)
     'throttle' => 'throttle:6,1',
 
