@@ -31,7 +31,8 @@ class VerifyPasskey
     ): Passkey {
         $response = $this->getResponse($credential);
 
-        return DB::transaction(function () use ($credential, $options, $user, $response) {
+        /** @var Passkey $passkey */
+        $passkey = DB::transaction(function () use ($credential, $options, $user, $response) {
             $passkey = $this->getPasskey($credential, lock: true);
 
             $this->ensurePasskeyBelongsToUser($passkey, $user);
@@ -44,6 +45,8 @@ class VerifyPasskey
 
             return $passkey;
         });
+
+        return $passkey;
     }
 
     /**
