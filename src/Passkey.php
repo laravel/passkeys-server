@@ -71,7 +71,7 @@ class Passkey extends Model
         /** @var class-string<Model> $model */
         $model = Passkeys::userModel();
 
-        return $this->belongsTo($model);
+        return $this->belongsTo($model, 'user_id');
     }
 
     /**
