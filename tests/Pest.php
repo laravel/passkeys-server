@@ -7,10 +7,10 @@ use Symfony\Component\Uid\Uuid;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorData;
 use Webauthn\CollectedClientData;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\TrustPath\EmptyTrustPath;
 use Webauthn\U2FPublicKey;
@@ -48,9 +48,9 @@ PEM;
     return $keypair;
 }
 
-function createCredentialSource(string $userHandle, ?string $credentialId = null, int $counter = 0): PublicKeyCredentialSource
+function createCredentialSource(string $userHandle, ?string $credentialId = null, int $counter = 0): CredentialRecord
 {
-    return PublicKeyCredentialSource::create(
+    return CredentialRecord::create(
         publicKeyCredentialId: $credentialId ?? random_bytes(16),
         type: 'public-key',
         transports: [],

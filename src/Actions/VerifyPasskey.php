@@ -13,9 +13,9 @@ use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\AuthenticatorAssertionResponse;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use Webauthn\PublicKeyCredentialSource;
 
 class VerifyPasskey
 {
@@ -107,14 +107,14 @@ class VerifyPasskey
         AuthenticatorAssertionResponse $response,
         Passkey $passkey,
         PublicKeyCredentialRequestOptions $options
-    ): PublicKeyCredentialSource {
+    ): CredentialRecord {
         $source = WebAuthn::fromJson(
             json_encode($passkey->credential, JSON_THROW_ON_ERROR),
-            PublicKeyCredentialSource::class
+            CredentialRecord::class
         );
 
         return WebAuthn::assertionValidator()->check(
-            publicKeyCredentialSource: $source,
+            credentialRecord: $source,
             authenticatorAssertionResponse: $response,
             publicKeyCredentialRequestOptions: $options,
             host: Passkeys::relyingPartyId(),
@@ -128,7 +128,7 @@ class VerifyPasskey
      * The credential must be persisted after each use to store the updated
      * signature counter, which is used to detect cloned authenticators.
      */
-    public function updatePasskey(Passkey $passkey, PublicKeyCredentialSource $source): void
+    public function updatePasskey(Passkey $passkey, CredentialRecord $source): void
     {
         $passkey->forceFill([
             'credential' => json_decode(WebAuthn::toJson($source), true, flags: JSON_THROW_ON_ERROR),

@@ -14,9 +14,9 @@ use Laravel\Passkeys\Support\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use RuntimeException;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
-use Webauthn\PublicKeyCredentialSource;
 
 class StorePasskey
 {
@@ -68,7 +68,7 @@ class StorePasskey
     protected function validate(
         AuthenticatorAttestationResponse $response,
         PublicKeyCredentialCreationOptions $options
-    ): PublicKeyCredentialSource {
+    ): CredentialRecord {
         return WebAuthn::attestationValidator()->check(
             authenticatorAttestationResponse: $response,
             publicKeyCredentialCreationOptions: $options,
@@ -81,7 +81,7 @@ class StorePasskey
      *
      * @throws InvalidPasskeyException
      */
-    protected function ensureCredentialIsUnique(PublicKeyCredentialSource $source): void
+    protected function ensureCredentialIsUnique(CredentialRecord $source): void
     {
         $credentialId = Base64UrlSafe::encodeUnpadded($source->publicKeyCredentialId);
 
@@ -98,7 +98,7 @@ class StorePasskey
     public function createPasskey(
         PasskeyUser $user,
         string $name,
-        PublicKeyCredentialSource $source
+        CredentialRecord $source
     ): Passkey {
         $credentialId = Base64UrlSafe::encodeUnpadded($source->publicKeyCredentialId);
 
