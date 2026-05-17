@@ -1,9 +1,17 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
 use Laravel\Passkeys\Passkey;
+use Laravel\Passkeys\Passkeys;
+use Laravel\Passkeys\PasskeysServiceProvider;
 use Laravel\Passkeys\Tests\User;
+
+afterEach(function (): void {
+    Passkeys::usePasskeyModel(Passkey::class);
+    (new ReflectionProperty(Passkeys::class, 'registersRoutes'))->setValue(null, true);
+});
 
 it('returns registration options for authenticated user', function (): void {
     $user = User::create([
@@ -12,6 +20,7 @@ it('returns registration options for authenticated user', function (): void {
     ]);
 
     $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->getJson('/user/passkeys/options')
         ->assertOk()
         ->assertJsonStructure([
@@ -31,10 +40,25 @@ it('stores registration options in session', function (): void {
     ]);
 
     $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->getJson('/user/passkeys/options')
         ->assertOk();
 
     expect(session('passkey.registration_options'))->not->toBeNull();
+});
+
+it('requires password confirmation for registration options', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/user/passkeys/options')
+        ->assertStatus(423)
+        ->assertJson([
+            'message' => 'Password confirmation required.',
+        ]);
 });
 
 it('requires authentication for registration options', function (): void {
@@ -67,6 +91,7 @@ it('returns validation error when passkey is invalid', function (): void {
     );
 
     $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->withSession(['passkey.registration_options' => 'serialized-options'])
         ->postJson('/user/passkeys', [
             'name' => 'My Passkey',
@@ -88,6 +113,7 @@ it('returns validation error when session has expired', function (): void {
     ]);
 
     $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->postJson('/user/passkeys', [
             'name' => 'My Passkey',
             'credential' => [
@@ -99,6 +125,28 @@ it('returns validation error when session has expired', function (): void {
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['credential']);
+});
+
+it('requires password confirmation to store a passkey', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson('/user/passkeys', [
+            'name' => 'My Passkey',
+            'credential' => [
+                'id' => 'dGVzdC1pZA',
+                'rawId' => 'dGVzdC1pZA',
+                'type' => 'public-key',
+                'response' => ['test' => 'response'],
+            ],
+        ])
+        ->assertStatus(423)
+        ->assertJson([
+            'message' => 'Password confirmation required.',
+        ]);
 });
 
 it('requires authentication to delete a passkey', function (): void {
@@ -119,11 +167,58 @@ it('deletes a passkey for the authenticated user', function (): void {
     ]);
 
     $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->deleteJson("/user/passkeys/{$passkey->id}")
         ->assertOk()
         ->assertJson(['status' => 'passkey-deleted']);
 
     expect(Passkey::find($passkey->id))->toBeNull();
+});
+
+it('resolves passkey route bindings with the configured passkey model', function (): void {
+    Passkeys::usePasskeyModel(CustomRouteKeyPasskey::class);
+
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlk',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->deleteJson("/user/passkeys/{$passkey->credential_id}")
+        ->assertOk()
+        ->assertJson(['status' => 'passkey-deleted']);
+
+    expect(CustomRouteKeyPasskey::find($passkey->id))->toBeNull();
+});
+
+it('resolves passkey route bindings when package routes are ignored', function (): void {
+    Passkeys::ignoreRoutes();
+    (new PasskeysServiceProvider($this->app))->boot();
+
+    Passkeys::usePasskeyModel(CustomRouteKeyPasskey::class);
+
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jdXN0b20tY3JlZGVudGlhbC1pZA',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $binding = Route::getBindingCallback('passkey');
+
+    expect($binding($passkey->credential_id))->toBeInstanceOf(CustomRouteKeyPasskey::class)
+        ->id->toBe($passkey->id);
 });
 
 it("forbids deleting another user's passkey", function (): void {
@@ -144,6 +239,39 @@ it("forbids deleting another user's passkey", function (): void {
     ]);
 
     $this->actingAs($otherUser)
+        ->withSession(['auth.password_confirmed_at' => time()])
         ->deleteJson("/user/passkeys/{$passkey->id}")
         ->assertForbidden();
 });
+
+it('requires password confirmation to delete a passkey', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $passkey = $user->passkeys()->create([
+        'name' => 'Test Passkey',
+        'credential_id' => 'dGVzdC1jcmVkZW50aWFsLWlk',
+        'credential' => ['publicKey' => 'test'],
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson("/user/passkeys/{$passkey->id}")
+        ->assertStatus(423)
+        ->assertJson([
+            'message' => 'Password confirmation required.',
+        ]);
+
+    expect(Passkey::find($passkey->id))->not->toBeNull();
+});
+
+class CustomRouteKeyPasskey extends Passkey
+{
+    protected $table = 'passkeys';
+
+    public function getRouteKeyName(): string
+    {
+        return 'credential_id';
+    }
+}
