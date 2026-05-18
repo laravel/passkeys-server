@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Laravel\Passkeys\Support;
 
 use Laravel\Passkeys\Passkeys;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use UnexpectedValueException;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
 use Webauthn\AuthenticatorAssertionResponseValidator;
@@ -35,6 +38,27 @@ final class WebAuthn
     public static function toJson(mixed $data): string
     {
         return self::serializer()->serialize($data, 'json');
+    }
+
+    /**
+     * Serialize data to a browser-facing array, omitting null values.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function toBrowserArray(mixed $data): array
+    {
+        $serializer = self::serializer();
+        assert($serializer instanceof NormalizerInterface);
+
+        $normalized = $serializer->normalize($data, 'json', [
+            AbstractObjectNormalizer::SKIP_NULL_VALUES => true,
+        ]);
+
+        if (! is_array($normalized)) {
+            throw new UnexpectedValueException('Serialized WebAuthn data must normalize to an array.');
+        }
+
+        return $normalized;
     }
 
     /**

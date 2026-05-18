@@ -33,6 +33,24 @@ it('returns registration options for authenticated user', function (): void {
         ]);
 });
 
+it('omits null values from browser-facing registration options', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->getJson('/user/passkeys/options')
+        ->assertOk();
+
+    expect($response->json('options.authenticatorSelection.authenticatorAttachment'))->toBeNull();
+    expect($response->json('options.authenticatorSelection'))
+        ->not->toHaveKey('authenticatorAttachment')
+        ->toHaveKey('residentKey', 'required')
+        ->toHaveKey('userVerification', 'required');
+});
+
 it('stores registration options in session', function (): void {
     $user = User::create([
         'name' => 'Test User',
