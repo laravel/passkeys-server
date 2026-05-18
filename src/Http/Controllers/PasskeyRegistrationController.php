@@ -38,7 +38,7 @@ class PasskeyRegistrationController extends Controller
         $request->session()->put('passkey.registration_options', $serialized);
 
         return response()->json([
-            'options' => json_decode($serialized, true),
+            'options' => WebAuthn::toBrowserArray($options),
         ]);
     }
 
