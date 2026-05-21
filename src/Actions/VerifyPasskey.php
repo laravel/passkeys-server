@@ -57,7 +57,7 @@ class VerifyPasskey
     protected function getResponse(PublicKeyCredential $credential): AuthenticatorAssertionResponse
     {
         if (! $credential->response instanceof AuthenticatorAssertionResponse) {
-            throw InvalidPasskeyException::make('Unable to verify passkey. Please try again.');
+            throw InvalidPasskeyException::make(__('Unable to verify passkey. Please try again.'));
         }
 
         return $credential->response;
@@ -79,7 +79,7 @@ class VerifyPasskey
         }
 
         return $query->first()
-            ?? throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
+            ?? throw InvalidPasskeyException::make(__('Passkey not recognized. It may have been removed from your account.'));
     }
 
     /**
@@ -96,7 +96,7 @@ class VerifyPasskey
         $identifier = $user->getKey();
 
         if (! is_scalar($identifier) || (string) $passkey->user_id !== (string) $identifier) {
-            throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
+            throw InvalidPasskeyException::make(__('Passkey not recognized. It may have been removed from your account.'));
         }
     }
 
