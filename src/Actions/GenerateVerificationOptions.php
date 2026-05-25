@@ -16,9 +16,12 @@ class GenerateVerificationOptions
     /**
      * Generate verification options for passwordless login or user confirmation.
      *
+     * The optional $guard parameter scopes the action to a specific auth
+     * guard for multi-guard installs; defaults to 'web' for BC.
+     *
      * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrequestoptions
      */
-    public function __invoke(?PasskeyUser $user = null): PublicKeyCredentialRequestOptions
+    public function __invoke(?PasskeyUser $user = null, string $guard = 'web'): PublicKeyCredentialRequestOptions
     {
         return PublicKeyCredentialRequestOptions::create(
             challenge: random_bytes(32),

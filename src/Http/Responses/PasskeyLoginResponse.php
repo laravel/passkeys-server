@@ -19,12 +19,15 @@ class PasskeyLoginResponse implements PasskeyLoginResponseContract
      */
     public function toResponse($request)
     {
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+        $redirect = (string) config("passkeys.guards.{$guard}.redirect", '/');
+
         if ($request->wantsJson()) {
             return new JsonResponse([
-                'redirect' => redirect()->intended(config('passkeys.redirect', '/'))->getTargetUrl(),
+                'redirect' => redirect()->intended($redirect)->getTargetUrl(),
             ], 200);
         }
 
-        return redirect()->intended(config('passkeys.redirect', '/'));
+        return redirect()->intended($redirect);
     }
 }

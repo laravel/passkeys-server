@@ -12,8 +12,11 @@ class DeletePasskey
 {
     /**
      * Delete the given passkey.
+     *
+     * The optional $guard parameter scopes the action to a specific auth
+     * guard for multi-guard installs; defaults to 'web' for BC.
      */
-    public function __invoke(Authenticatable $user, Passkey $passkey): void
+    public function __invoke(Authenticatable $user, Passkey $passkey, string $guard = 'web'): void
     {
         $passkey->delete();
 

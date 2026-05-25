@@ -21,8 +21,11 @@ class GenerateRegistrationOptions
 {
     /**
      * Generate registration options for a user to create a new passkey.
+     *
+     * The optional $guard parameter scopes the action to a specific auth
+     * guard for multi-guard installs; defaults to 'web' for BC.
      */
-    public function __invoke(Authenticatable $user): PublicKeyCredentialCreationOptions
+    public function __invoke(Authenticatable $user, string $guard = 'web'): PublicKeyCredentialCreationOptions
     {
         if (! $user instanceof PasskeyUser) {
             throw new RuntimeException('User model must implement the PasskeyUser contract.');

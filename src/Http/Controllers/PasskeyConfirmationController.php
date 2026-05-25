@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Contracts\PasskeyConfirmationResponse;
@@ -26,7 +25,9 @@ class PasskeyConfirmationController extends Controller
      */
     public function index(Request $request, GenerateVerificationOptions $generate): JsonResponse
     {
-        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $user = Auth::guard($guard)->user()
             ?? throw new AuthenticationException;
 
         if (! $user instanceof PasskeyUser) {
@@ -51,7 +52,9 @@ class PasskeyConfirmationController extends Controller
         PasskeyVerificationRequest $request,
         VerifyPasskey $verify,
     ): PasskeyConfirmationResponse {
-        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $user = Auth::guard($guard)->user()
             ?? throw new AuthenticationException;
 
         if (! $user instanceof PasskeyUser) {

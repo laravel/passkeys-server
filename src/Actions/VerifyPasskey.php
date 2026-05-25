@@ -12,6 +12,7 @@ use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\Support\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use RuntimeException;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
@@ -22,18 +23,22 @@ class VerifyPasskey
     /**
      * Validate the passkey credential and return the passkey.
      *
+     * The optional $guard parameter scopes the action to a specific auth
+     * guard for multi-guard installs; defaults to 'web' for BC.
+     *
      * @throws InvalidPasskeyException
      */
     public function __invoke(
         PublicKeyCredential $credential,
         PublicKeyCredentialRequestOptions $options,
-        ?PasskeyUser $user = null
+        ?PasskeyUser $user = null,
+        string $guard = 'web'
     ): Passkey {
         $response = $this->getResponse($credential);
 
         /** @var Passkey $passkey */
-        $passkey = DB::transaction(function () use ($credential, $options, $user, $response) {
-            $passkey = $this->getPasskey($credential, lock: true);
+        $passkey = DB::transaction(function () use ($credential, $options, $user, $response, $guard) {
+            $passkey = $this->getPasskey($credential, lock: true, guard: $guard);
 
             $this->ensurePasskeyBelongsToUser($passkey, $user);
 
@@ -41,7 +46,9 @@ class VerifyPasskey
 
             $this->updatePasskey($passkey, $source);
 
-            PasskeyVerified::dispatch($passkey->user, $passkey);
+            $owner = $passkey->authenticatable;
+
+            PasskeyVerified::dispatch($owner, $passkey);
 
             return $passkey;
         });
@@ -68,11 +75,16 @@ class VerifyPasskey
      *
      * @throws InvalidPasskeyException
      */
-    public function getPasskey(PublicKeyCredential $credential, bool $lock = false): Passkey
+    public function getPasskey(PublicKeyCredential $credential, bool $lock = false, string $guard = 'web'): Passkey
     {
         $credentialId = Base64UrlSafe::encodeUnpadded($credential->rawId);
 
-        $query = Passkeys::passkeyModel()::where('credential_id', $credentialId);
+        $model = Passkeys::passkeyModel();
+        $connection = $this->connectionForGuard($guard);
+
+        $query = $connection !== null
+            ? $model::on($connection)->where('credential_id', $credentialId)
+            : $model::where('credential_id', $credentialId);
 
         if ($lock) {
             $query->lockForUpdate();
@@ -83,7 +95,23 @@ class VerifyPasskey
     }
 
     /**
+     * Resolve the DB connection for the given guard, falling back to the
+     * default connection when no per-guard configuration is registered.
+     */
+    protected function connectionForGuard(string $guard): ?string
+    {
+        try {
+            return Passkeys::tableConnectionFor($guard);
+        } catch (RuntimeException) {
+            return null;
+        }
+    }
+
+    /**
      * Ensure the passkey belongs to the expected user.
+     *
+     * Compares the polymorphic authenticatable_type + authenticatable_id
+     * columns against the expected user's morph class + key.
      *
      * @throws InvalidPasskeyException
      */
@@ -94,8 +122,13 @@ class VerifyPasskey
         }
 
         $identifier = $user->getKey();
+        $expectedType = $user->getMorphClass();
 
-        if (! is_scalar($identifier) || (string) $passkey->user_id !== (string) $identifier) {
+        if (
+            ! is_scalar($identifier)
+            || (string) $passkey->authenticatable_id !== (string) $identifier
+            || $passkey->authenticatable_type !== $expectedType
+        ) {
             throw InvalidPasskeyException::make('Passkey not recognized. It may have been removed from your account.');
         }
     }

@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\GenerateVerificationOptions;
 use Laravel\Passkeys\Actions\VerifyPasskey;
 use Laravel\Passkeys\Contracts\PasskeyLoginResponse;
@@ -26,7 +25,9 @@ class PasskeyLoginController extends Controller
      */
     public function index(Request $request, GenerateVerificationOptions $generate): JsonResponse
     {
-        $options = $generate();
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $options = $generate(null, $guard);
 
         $serialized = WebAuthn::toJson($options);
 
@@ -44,22 +45,26 @@ class PasskeyLoginController extends Controller
         PasskeyVerificationRequest $request,
         VerifyPasskey $verify,
     ): PasskeyLoginResponse {
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
         $passkey = $verify(
             $request->credential(),
-            $request->verificationOptions()
+            $request->verificationOptions(),
+            null,
+            $guard,
         );
 
-        $guard = Auth::guard(Config::string('passkeys.guard'));
+        $statefulGuard = Auth::guard($guard);
 
-        if (! $guard instanceof StatefulGuard) {
+        if (! $statefulGuard instanceof StatefulGuard) {
             throw new RuntimeException('Passkeys requires a stateful authentication guard.');
         }
 
-        if (! Passkeys::allowsLogin($request, $passkey)) {
+        if (! Passkeys::allowsLogin($request, $passkey, $guard)) {
             throw InvalidPasskeyException::make('Unable to sign in with this account.');
         }
 
-        $guard->login($passkey->user, $request->remember());
+        $statefulGuard->login($passkey->authenticatable, $request->remember());
 
         $request->session()->regenerate();
 

@@ -21,6 +21,9 @@ it('has the correct fillable attributes', function (): void {
         'name',
         'credential_id',
         'credential',
+        'authenticatable_type',
+        'authenticatable_id',
+        'last_used_at',
     ]);
 });
 
@@ -36,11 +39,12 @@ it('can belong to a user model with a custom primary key', function (): void {
     ]);
 
     $passkey = (new Passkey)->forceFill([
-        'user_id' => $user->getKey(),
+        'authenticatable_type' => $user->getMorphClass(),
+        'authenticatable_id' => $user->getKey(),
     ]);
 
-    expect($passkey->user)->not->toBeNull();
-    expect($passkey->user->is($user))->toBeTrue();
+    expect($passkey->authenticatable)->not->toBeNull();
+    expect($passkey->authenticatable->is($user))->toBeTrue();
 });
 
 class UserWithCustomPrimaryKey extends Authenticatable implements PasskeyUser

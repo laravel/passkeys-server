@@ -23,13 +23,17 @@ class StorePasskey
     /**
      * Validate and store a passkey for the user.
      *
+     * The optional $guard parameter scopes the action to a specific auth
+     * guard for multi-guard installs; defaults to 'web' for BC.
+     *
      * @throws InvalidPasskeyException
      */
     public function __invoke(
         Authenticatable $user,
         string $name,
         PublicKeyCredential $credential,
-        PublicKeyCredentialCreationOptions $options
+        PublicKeyCredentialCreationOptions $options,
+        string $guard = 'web'
     ): Passkey {
         if (! $user instanceof PasskeyUser) {
             throw new RuntimeException('User model must implement the PasskeyUser contract.');
@@ -39,7 +43,7 @@ class StorePasskey
 
         $source = $this->validate($response, $options);
 
-        $this->ensureCredentialIsUnique($source);
+        $this->ensureCredentialIsUnique($source, $guard);
 
         $passkey = $this->createPasskey($user, $name, $source);
 
@@ -81,14 +85,32 @@ class StorePasskey
      *
      * @throws InvalidPasskeyException
      */
-    protected function ensureCredentialIsUnique(CredentialRecord $source): void
+    protected function ensureCredentialIsUnique(CredentialRecord $source, string $guard = 'web'): void
     {
         $credentialId = Base64UrlSafe::encodeUnpadded($source->publicKeyCredentialId);
 
-        $exists = Passkeys::passkeyModel()::where('credential_id', $credentialId)->exists();
+        $model = Passkeys::passkeyModel();
+        $connection = $this->connectionForGuard($guard);
 
-        if ($exists) {
+        $query = $connection !== null
+            ? $model::on($connection)->where('credential_id', $credentialId)
+            : $model::where('credential_id', $credentialId);
+
+        if ($query->exists()) {
             throw InvalidPasskeyException::make('Unable to register this passkey.');
+        }
+    }
+
+    /**
+     * Resolve the DB connection for the given guard, falling back to the
+     * default connection when no per-guard configuration is registered.
+     */
+    protected function connectionForGuard(string $guard): ?string
+    {
+        try {
+            return Passkeys::tableConnectionFor($guard);
+        } catch (RuntimeException) {
+            return null;
         }
     }
 

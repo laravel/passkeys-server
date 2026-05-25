@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Actions\DeletePasskey;
 use Laravel\Passkeys\Actions\GenerateRegistrationOptions;
 use Laravel\Passkeys\Actions\StorePasskey;
@@ -28,10 +27,12 @@ class PasskeyRegistrationController extends Controller
      */
     public function index(Request $request, GenerateRegistrationOptions $generate): JsonResponse
     {
-        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $user = Auth::guard($guard)->user()
             ?? throw new AuthenticationException;
 
-        $options = $generate($user);
+        $options = $generate($user, $guard);
 
         $serialized = WebAuthn::toJson($options);
 
@@ -49,14 +50,17 @@ class PasskeyRegistrationController extends Controller
         PasskeyRegistrationRequest $request,
         StorePasskey $storePasskey,
     ): PasskeyRegistrationResponse {
-        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $user = Auth::guard($guard)->user()
             ?? throw new AuthenticationException;
 
         $passkey = $storePasskey(
             $user,
             $request->string('name')->toString(),
             $request->credential(),
-            $request->registrationOptions()
+            $request->registrationOptions(),
+            $guard,
         );
 
         return app(PasskeyRegistrationResponse::class)->withPasskey($passkey);
@@ -66,19 +70,30 @@ class PasskeyRegistrationController extends Controller
      * Delete a passkey for the authenticated user.
      */
     public function destroy(
+        Request $request,
         Passkey $passkey,
-        DeletePasskey $deletePasskey
+        DeletePasskey $deletePasskey,
     ): PasskeyDeletedResponse {
-        $user = Auth::guard(Config::string('passkeys.guard'))->user()
+        $guard = (string) ($request->route()?->defaults['passkey_guard'] ?? 'web');
+
+        $user = Auth::guard($guard)->user()
             ?? throw new AuthenticationException;
 
         if (! $user instanceof PasskeyUser) {
             throw new RuntimeException('User model must implement the PasskeyUser contract.');
         }
 
-        abort_unless($passkey->user_id === $user->getKey(), 403);
+        $identifier = $user->getKey();
+        $expectedType = $user->getMorphClass();
 
-        $deletePasskey($user, $passkey);
+        abort_unless(
+            is_scalar($identifier)
+                && (string) $passkey->authenticatable_id === (string) $identifier
+                && $passkey->authenticatable_type === $expectedType,
+            403,
+        );
+
+        $deletePasskey($user, $passkey, $guard);
 
         return app(PasskeyDeletedResponse::class);
     }
