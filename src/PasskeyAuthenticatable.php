@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laravel\Passkeys;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Config;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 
@@ -15,15 +15,19 @@ use Laravel\Passkeys\Contracts\PasskeyUser;
 trait PasskeyAuthenticatable
 {
     /**
-     * Get the passkeys associated with the user.
+     * Polymorphic morphMany — single passkeys table can hold
+     * credentials for many distinct user models across guards.
      *
-     * @return HasMany<Passkey, Model>
+     * @return MorphMany<Passkey, Model>
      *
-     * @phpstan-return HasMany<Passkey, Model>
+     * @phpstan-return MorphMany<Passkey, Model>
      */
-    public function passkeys(): HasMany
+    public function passkeys(): MorphMany
     {
-        return $this->hasMany(Passkeys::passkeyModel());
+        return $this->morphMany(
+            Passkeys::passkeyModel(),
+            'authenticatable',
+        );
     }
 
     /**
@@ -74,5 +78,18 @@ trait PasskeyAuthenticatable
     {
         return $this->getAttribute('email')
             ?? (string) $this->getAuthIdentifier();
+    }
+
+    /**
+     * Get the auth guard this user belongs to.
+     *
+     * Default implementation returns the application's default
+     * guard, preserving single-guard backwards compatibility.
+     * Override in the user model when participating in the
+     * multi-guard resolver (see config('passkeys.guards.{name}')).
+     */
+    public function getPasskeyGuard(): string
+    {
+        return Config::string('auth.defaults.guard');
     }
 }

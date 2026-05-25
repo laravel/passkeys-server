@@ -47,7 +47,7 @@ abstract class TestCase extends BaseTestCase
 
         Schema::create('passkeys', function (Blueprint $table): void {
             $table->id();
-            $table->foreignIdFor(Passkeys::userModel(), 'user_id')->constrained()->cascadeOnDelete();
+            $table->morphs('authenticatable');
             $table->string('name');
             $table->string('credential_id')->unique();
             $table->json('credential');

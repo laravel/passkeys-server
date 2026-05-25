@@ -7,7 +7,7 @@ namespace Laravel\Passkeys;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Support\Aaguids;
@@ -16,14 +16,15 @@ use Laravel\Passkeys\Support\Aaguids;
  * @mixin Builder<Passkey>
  *
  * @property int $id
- * @property int|string $user_id
+ * @property string $authenticatable_type
+ * @property int|string $authenticatable_id
  * @property string $name
  * @property string $credential_id
  * @property array<string, mixed> $credential
  * @property Carbon|null $last_used_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read PasskeyUser $user
+ * @property-read PasskeyUser $authenticatable
  * @property-read string|null $authenticator
  */
 class Passkey extends Model
@@ -37,6 +38,9 @@ class Passkey extends Model
         'name',
         'credential_id',
         'credential',
+        'authenticatable_type',
+        'authenticatable_id',
+        'last_used_at',
     ];
 
     /**
@@ -62,16 +66,13 @@ class Passkey extends Model
     }
 
     /**
-     * Get the user that owns the passkey.
+     * Polymorphic owner — replaces single-user `user()` belongsTo.
      *
-     * @return BelongsTo<Model, $this>
+     * @return MorphTo<Model, Passkey>
      */
-    public function user(): BelongsTo
+    public function authenticatable(): MorphTo
     {
-        /** @var class-string<Model> $model */
-        $model = Passkeys::userModel();
-
-        return $this->belongsTo($model, 'user_id');
+        return $this->morphTo();
     }
 
     /**
