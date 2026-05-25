@@ -36,7 +36,12 @@ class Passkeys
     /**
      * Callback to determine if a passkey-verified user should be logged in.
      *
-     * @var (Closure(Request, Contracts\PasskeyUser, Passkey): bool)|null
+     * The callback receives the request, the authenticatable owner of the
+     * passkey, the passkey itself, and the resolved guard name. The guard
+     * argument lets multi-guard installs apply guard-specific authorization
+     * (e.g. allow admins only from a trusted IP range).
+     *
+     * @var (Closure(Request, Contracts\PasskeyUser, Passkey, string): bool)|null
      */
     private static ?Closure $authorizeLoginUsing = null;
 
@@ -142,9 +147,57 @@ class Passkeys
     }
 
     /**
+     * Resolve the user model class for a given auth guard.
+     *
+     * @return class-string<Contracts\PasskeyUser>
+     *
+     * @throws RuntimeException when no per-guard config exists for $guard
+     */
+    public static function userModelFor(string $guard): string
+    {
+        $guards = Config::array('passkeys.guards', []);
+        $model = $guards[$guard]['user_model'] ?? null;
+
+        if ($model === null) {
+            throw new RuntimeException("No passkeys configuration for guard '{$guard}'");
+        }
+
+        return $model;
+    }
+
+    /**
+     * Resolve the DB connection name for a given auth guard, or null
+     * to use the application's default connection.
+     */
+    public static function tableConnectionFor(string $guard): ?string
+    {
+        $guards = Config::array('passkeys.guards', []);
+        if (! isset($guards[$guard])) {
+            throw new RuntimeException("No passkeys configuration for guard '{$guard}'");
+        }
+
+        return $guards[$guard]['connection'] ?? null;
+    }
+
+    /**
+     * Resolve the post-login redirect path for a given auth guard.
+     */
+    public static function redirectFor(string $guard): string
+    {
+        $guards = Config::array('passkeys.guards', []);
+        $redirect = $guards[$guard]['redirect'] ?? null;
+
+        if ($redirect === null) {
+            throw new RuntimeException("No passkeys configuration for guard '{$guard}'");
+        }
+
+        return $redirect;
+    }
+
+    /**
      * Register a callback to authorize passkey logins before login.
      *
-     * @param  (callable(Request, Contracts\PasskeyUser, Passkey): bool)|null  $callback
+     * @param  (callable(Request, Contracts\PasskeyUser, Passkey, string): bool)|null  $callback
      */
     public static function authorizeLoginUsing(?callable $callback): void
     {
@@ -155,14 +208,17 @@ class Passkeys
 
     /**
      * Determine if a passkey-verified user should be allowed to log in.
+     *
+     * The $guard argument is the auth guard name resolved from the matched
+     * route's 'passkey_guard' default, allowing per-guard authorization.
      */
-    public static function allowsLogin(Request $request, Passkey $passkey): bool
+    public static function allowsLogin(Request $request, Passkey $passkey, string $guard = 'web'): bool
     {
         if (! self::$authorizeLoginUsing instanceof Closure) {
             return true;
         }
 
-        return (bool) (self::$authorizeLoginUsing)($request, $passkey->user, $passkey);
+        return (bool) (self::$authorizeLoginUsing)($request, $passkey->authenticatable, $passkey, $guard);
     }
 
     /**

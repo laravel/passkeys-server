@@ -102,22 +102,95 @@ return [
     // WebAuthn timeout in milliseconds
     'timeout' => 60000,
 
-    // Authentication guard
-    'guard' => 'web',
-
-    // Routes middleware
-    'middleware' => ['web'],
-
-    // Middleware applied to passkey management routes (set to [] to disable)
-    'management_middleware' => ['password.confirm'],
+    // Per-guard configuration. Add one block per auth guard that should
+    // support passkeys; the default `web` guard is shown below.
+    'guards' => [
+        'web' => [
+            'user_model' => env('AUTH_MODEL', App\Models\User::class),
+            'connection' => null,
+            'redirect' => '/',
+            'middleware' => ['web'],
+            'management_middleware' => ['password.confirm'],
+        ],
+    ],
 
     // Throttle middleware (null to disable)
     'throttle' => 'throttle:6,1',
-
-    // Redirect after login
-    'redirect' => '/',
 ];
 ```
+
+## Multi-Guard Support
+
+A single application can authenticate multiple user populations — for example a customer-facing `web` guard and a back-office `admin` guard — using passkeys, with each guard pointing at its own user model and (optionally) its own database connection. Passkeys are stored polymorphically, so different guards can use different user models without sharing a table.
+
+### Configuration
+
+Each guard gets its own block in `passkeys.guards`:
+
+```php
+'guards' => [
+    'web' => [
+        'user_model' => App\Models\User::class,
+        'connection' => null,                  // null = default DB connection
+        'redirect' => '/dashboard',
+        'middleware' => ['web'],
+        'management_middleware' => ['password.confirm'],
+    ],
+    'admin' => [
+        'user_model' => App\Models\AdminUser::class,
+        'connection' => 'central',             // separate DB connection
+        'redirect' => '/admin',
+        'middleware' => ['web', 'admin'],
+        'management_middleware' => ['password.confirm:admin'],
+    ],
+],
+```
+
+Keys:
+
+- `user_model` — the Eloquent user class for this guard.
+- `connection` — optional DB connection name for the user model; `null` uses the default.
+- `redirect` — post-login redirect target for `PasskeyLoginResponse`.
+- `middleware` — middleware stack wrapping every passkey route for this guard.
+- `management_middleware` — extra middleware on registration/management routes (e.g. recent-reauth gate).
+
+### User Model Contract
+
+Each user model declares which guard it belongs to:
+
+```php
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
+
+class AdminUser extends Authenticatable implements PasskeyUser
+{
+    use PasskeyAuthenticatable;
+
+    public function getPasskeyGuard(): string
+    {
+        return 'admin';
+    }
+}
+```
+
+### Route Registration
+
+Disable the automatic single-guard routes and register one route group per guard via the `Route::passkeys()` macro:
+
+```php
+use Laravel\Passkeys\Passkeys;
+
+Passkeys::ignoreRoutes();
+
+Route::passkeys('web', ['prefix' => '/passkeys']);
+Route::passkeys('admin', ['prefix' => '/admin/passkeys', 'middleware' => ['web', 'admin']]);
+```
+
+The macro stamps a `passkey_guard` route default so the shared controllers know which guard's config to read.
+
+### Polymorphic Schema
+
+The `passkeys` table uses `authenticatable_type` + `authenticatable_id` polymorphic columns so multiple user models can share a single passkeys table. Single-guard installations upgrading from an earlier schema can apply the additive `make_passkeys_polymorphic` migration to backfill the morph columns without data loss.
 
 ## Events
 

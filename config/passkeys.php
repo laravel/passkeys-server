@@ -1,117 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Relying Party ID
+    | Relying Party Identity (global, applies to all guards)
     |--------------------------------------------------------------------------
-    |
-    | The relying party ID represents your application in the WebAuthn protocol.
-    | This is typically your domain (e.g., "example.com"). Passkeys are bound
-    | to this ID and can only be verified on matching domains.
-    |
     */
+    'relying_party_id' => env('PASSKEYS_RP_ID', parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost'),
 
-    'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
+    'allowed_origins' => [config('app.url')],
 
     /*
     |--------------------------------------------------------------------------
-    | Allowed Origins
+    | WebAuthn Operation Timing (global)
+    |--------------------------------------------------------------------------
+    */
+    'timeout' => env('PASSKEYS_TIMEOUT', 60000),
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Handle Secret (global)
     |--------------------------------------------------------------------------
     |
-    | The origins permitted to complete WebAuthn ceremonies. Passkeys bound
-    | to the relying party ID above will only verify when the browser
-    | reports one of these origins. Defaults to your application URL.
-    |
+    | HMAC secret used to derive a stable WebAuthn user handle from each
+    | user model. Falls back to APP_KEY.
     */
+    'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', env('APP_KEY')),
 
-    'allowed_origins' => [
-        config('app.url'),
+    /*
+    |--------------------------------------------------------------------------
+    | Per-Guard Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Define one block per auth guard that should support passkeys. Each
+    | guard chooses its own user model, DB connection (null = default),
+    | post-login redirect, route middleware, and passkey-management
+    | middleware (typically password.confirm or equivalent re-auth gate).
+    */
+    'guards' => [
+
+        'web' => [
+            'user_model' => env('AUTH_MODEL', 'App\\Models\\User'),
+            'connection' => null,
+            'redirect' => '/',
+            'middleware' => ['web'],
+            'management_middleware' => ['password.confirm'],
+        ],
+
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | User Handle Secret
+    | Throttle (global, applies to all guards' passkey endpoints)
     |--------------------------------------------------------------------------
-    |
-    | Secret used to derive a stable WebAuthn user handle from each user model.
-    | Set this explicitly if you rotate your application key.
-    |
     */
-
-    'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
-
-    /*
-    |--------------------------------------------------------------------------
-    | WebAuthn Timeout
-    |--------------------------------------------------------------------------
-    |
-    | The timeout in milliseconds for WebAuthn operations. This determines
-    | how long users have to complete passkey registration or verification.
-    |
-    */
-
-    'timeout' => 60000,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Guard
-    |--------------------------------------------------------------------------
-    |
-    | The authentication guard to use when logging in users with passkeys.
-    | This should match your application's primary authentication guard.
-    |
-    */
-
-    'guard' => 'web',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Passkeys Routes Middleware
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify which middleware Passkeys will assign to the routes
-    | that it registers with the application. If necessary, you may change
-    | these middleware but typically this provided default is preferred.
-    |
-    */
-
-    'middleware' => ['web'],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Passkeys Management Middleware
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the middleware applied to passkey management routes
-    | that create or delete passkeys. By default, Laravel's password
-    | confirmation middleware is used.
-    |
-    */
-
-    'management_middleware' => ['password.confirm'],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Passkeys Throttling
-    |--------------------------------------------------------------------------
-    |
-    | Middleware used to throttle passkey endpoints. Set to null to disable.
-    |
-    */
-
     'throttle' => 'throttle:6,1',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Redirect
-    |--------------------------------------------------------------------------
-    |
-    | The path to redirect to after successful passkey verification.
-    |
-    */
-
-    'redirect' => '/',
 
 ];

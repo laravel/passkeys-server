@@ -6,18 +6,18 @@ namespace Laravel\Passkeys\Contracts;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 interface PasskeyUser extends Authenticatable
 {
     /**
      * Get the passkeys associated with the user.
      *
-     * @return HasMany<Passkey, Model>
+     * @return MorphMany<Passkey, Model>
      *
-     * @phpstan-return HasMany<\Laravel\Passkeys\Passkey, Model>
+     * @phpstan-return MorphMany<\Laravel\Passkeys\Passkey, Model>
      */
-    public function passkeys(): HasMany;
+    public function passkeys(): MorphMany;
 
     /**
      * Determine if the user has any passkeys enabled.
@@ -45,4 +45,13 @@ interface PasskeyUser extends Authenticatable
      * Get the username for WebAuthn registration.
      */
     public function getPasskeyUsername(): string;
+
+    /**
+     * Get the auth guard this user belongs to.
+     *
+     * Used by the multi-guard resolver to pick the correct
+     * user_model, DB connection, and post-login redirect from
+     * config('passkeys.guards.{name}').
+     */
+    public function getPasskeyGuard(): string;
 }
