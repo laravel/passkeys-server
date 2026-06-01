@@ -79,6 +79,16 @@ it('creates validators without throwing', function (): void {
     expect($assertion)->not->toBeNull();
 });
 
+it('creates validators without throwing when subdomains are allowed', function (): void {
+    config(['passkeys.allow_subdomains' => true]);
+
+    $attestation = WebAuthn::attestationValidator();
+    $assertion = WebAuthn::assertionValidator();
+
+    expect($attestation)->not->toBeNull();
+    expect($assertion)->not->toBeNull();
+});
+
 it('flushes cached instances', function (): void {
     // Call twice to populate cache
     WebAuthn::toJson(['test' => 'data']);

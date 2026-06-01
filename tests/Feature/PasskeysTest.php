@@ -45,6 +45,24 @@ it('throws when no allowed origins are configured', function (): void {
     Passkeys::allowedOrigins();
 })->throws(RuntimeException::class, 'At least one passkey allowed origin must be configured.');
 
+it('does not allow subdomains by default', function (): void {
+    config()->offsetUnset('passkeys.allow_subdomains');
+
+    expect(Passkeys::allowSubdomains())->toBeFalse();
+});
+
+it('allows subdomains when enabled', function (): void {
+    config(['passkeys.allow_subdomains' => true]);
+
+    expect(Passkeys::allowSubdomains())->toBeTrue();
+});
+
+it('casts a truthy allow subdomains config value to a boolean', function (): void {
+    config(['passkeys.allow_subdomains' => '1']);
+
+    expect(Passkeys::allowSubdomains())->toBeTrue();
+});
+
 it('supports custom sign-in authorization callbacks', function (): void {
     $user = User::create([
         'name' => 'John Doe',

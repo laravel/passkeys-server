@@ -87,6 +87,19 @@ class Passkeys
     }
 
     /**
+     * Determine whether WebAuthn ceremonies may be completed from subdomains
+     * of the configured allowed origins.
+     *
+     * When enabled, an origin such as https://tenant.example.com satisfies an
+     * allowed origin of https://example.com. Defaults to false to preserve the
+     * stricter exact-origin matching.
+     */
+    public static function allowSubdomains(): bool
+    {
+        return (bool) Config::get('passkeys.allow_subdomains', false);
+    }
+
+    /**
      * Get the WebAuthn timeout in milliseconds.
      *
      * @return positive-int

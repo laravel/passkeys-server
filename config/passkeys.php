@@ -15,6 +15,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Allow Subdomains (global)
+    |--------------------------------------------------------------------------
+    |
+    | When true, WebAuthn ceremonies are accepted from subdomains of the
+    | configured allowed origins — e.g. an allowed origin of
+    | https://example.com will also accept https://tenant.example.com. This
+    | suits apps that serve users on per-tenant or per-team subdomains under a
+    | single relying party. Leave false to require an exact origin match.
+    */
+    'allow_subdomains' => env('PASSKEYS_ALLOW_SUBDOMAINS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | WebAuthn Operation Timing (global)
     |--------------------------------------------------------------------------
     */

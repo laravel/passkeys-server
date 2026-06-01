@@ -96,6 +96,12 @@ return [
     // Origins allowed to complete WebAuthn ceremonies
     'allowed_origins' => [config('app.url')],
 
+    // Accept ceremonies from subdomains of the allowed origins. When true, an
+    // allowed origin of https://example.com also accepts
+    // https://tenant.example.com. Useful for per-tenant/per-team subdomains
+    // under one relying party. Defaults to false (exact-origin match).
+    'allow_subdomains' => env('PASSKEYS_ALLOW_SUBDOMAINS', false),
+
     // Secret for deriving stable opaque user handles
     'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
 
