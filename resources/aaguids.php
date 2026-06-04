@@ -27,6 +27,7 @@ return [
     '50726f74-6f6e-5061-7373-50726f746f6e' => 'Proton Pass',
     'fdb141b2-5d84-443e-8a35-4698c205a502' => 'KeePassXC',
     'eaecdef2-1c31-5634-8639-f1cbd9c00a08' => 'KeePassDX',
+    '9addb28c-b46f-4402-808f-019651441ff3' => 'KeePassPasskey',
     'cc45f64e-52a2-451b-831a-4edd8022a202' => 'ToothPic Passkey Provider',
     'bfc748bb-3429-4faa-b9f9-7cfa9f3b76d0' => 'iPasswords',
     'b35a26b2-8f6e-4697-ab1d-d44db4da28c6' => 'Zoho Vault',
@@ -42,4 +43,8 @@ return [
     'd9be9d39-e6a6-4c28-a581-32b044d986e4' => 'Sticky Password Manager',
     '70617373-7761-6c6c-6669-646f32303236' => 'Passwall',
     'c9cadfc9-89a9-489e-a25a-c7e86a4d5f15' => 'Burp Suite Navigation Recorder',
+    'fa37f553-f9b6-4adb-ac53-8bbb57ebdf0d' => 'Norton Password Manager',
+    'a4a2d88e-9796-4356-9164-e2a5a8bd019c' => 'Avast Password Manager',
+    'e7db2bd3-f2fe-4d71-ad78-7e7aa166cfd1' => 'Avira Password Manager',
+    '6bb49926-160a-4306-a100-4eb39ba6ac45' => 'AVG Password Manager',
 ];
