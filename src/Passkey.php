@@ -107,6 +107,16 @@ class Passkey extends Model
     }
 
     /**
+     * Load the light and dark authenticator icons so they are included in serialization.
+     *
+     * @return $this
+     */
+    protected function appendAuthenticatorIcons()
+    {
+        return $this->append('authenticator_icon_light', 'authenticator_icon_dark');
+    }
+
+    /**
      * Get the AAGUID stored on the credential, ignoring the unknown sentinel.
      */
     protected function resolvedAaguid(): ?string
