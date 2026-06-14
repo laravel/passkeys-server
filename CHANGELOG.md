@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.1 - 2026-05-18
+
+### What's Changed
+
+* Omit null values from options by [@benbjurstrom](https://github.com/benbjurstrom) in https://github.com/laravel/passkeys-server/pull/24
+
+**Full Changelog**: https://github.com/laravel/passkeys-server/compare/v0.2.0...v0.2.1
+
 ## v0.2.0 - 2026-05-14
 
 ### What's Changed

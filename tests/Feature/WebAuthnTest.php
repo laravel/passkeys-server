@@ -1,6 +1,7 @@
 <?php
 
 use Laravel\Passkeys\Support\WebAuthn;
+use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
@@ -28,6 +29,31 @@ it('serializes and deserializes registration options', function (): void {
     expect($restored->rp->id)->toBe('localhost');
     expect($restored->user->name)->toBe('test@example.com');
     expect($restored->user->displayName)->toBe('Test User');
+});
+
+it('serializes browser arrays without null values', function (): void {
+    $options = PublicKeyCredentialCreationOptions::create(
+        rp: PublicKeyCredentialRpEntity::create(name: 'Test App', id: 'localhost'),
+        user: PublicKeyCredentialUserEntity::create(
+            name: 'test@example.com',
+            id: 'user-id-123',
+            displayName: 'Test User',
+        ),
+        challenge: random_bytes(32),
+        authenticatorSelection: AuthenticatorSelectionCriteria::create(
+            authenticatorAttachment: AuthenticatorSelectionCriteria::AUTHENTICATOR_ATTACHMENT_NO_PREFERENCE,
+            residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
+        ),
+        excludeCredentials: [],
+    );
+
+    $array = WebAuthn::toBrowserArray($options);
+
+    expect($array)->not->toHaveKey('attestation');
+    expect($array)->toHaveKey('excludeCredentials', []);
+    expect($array['authenticatorSelection'])
+        ->not->toHaveKey('authenticatorAttachment')
+        ->toHaveKey('residentKey', 'required');
 });
 
 it('serializes and deserializes verification options', function (): void {
