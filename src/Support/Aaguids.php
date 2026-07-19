@@ -7,27 +7,25 @@ namespace Laravel\Passkeys\Support;
 use InvalidArgumentException;
 
 /**
- * AAGUID to authenticator metadata mapping.
+ * AAGUID to authenticator name mapping.
  *
  * @see https://github.com/passkeydeveloper/passkey-authenticator-aaguids
- *
- * @phpstan-type AaguidEntry array{name: string, icon_light: string|null, icon_dark: string|null}
  */
 class Aaguids
 {
-    /**
-     * The cached AAGUID metadata mapping.
-     *
-     * @var array<string, AaguidEntry>|null
-     */
-    protected static ?array $aaguids = null;
-
     /**
      * The cached AAGUID to name mapping.
      *
      * @var array<string, string>|null
      */
-    protected static ?array $labels = null;
+    protected static ?array $aaguids = null;
+
+    /**
+     * The cached AAGUID to icon mapping, keyed by theme.
+     *
+     * @var array<string, array<string, string>>|null
+     */
+    protected static ?array $icons = null;
 
     /**
      * Get the authenticator label for the given AAGUID.
@@ -39,6 +37,8 @@ class Aaguids
 
     /**
      * Get the authenticator icon (data URI) for the given AAGUID.
+     *
+     * @throws InvalidArgumentException
      */
     public static function iconFor(string $aaguid, string $theme = 'light'): ?string
     {
@@ -46,7 +46,7 @@ class Aaguids
             throw new InvalidArgumentException("Unsupported icon theme [{$theme}]. Expected 'light' or 'dark'.");
         }
 
-        return static::metadata()[$aaguid]['icon_'.$theme] ?? null;
+        return static::icons()[$aaguid][$theme] ?? null;
     }
 
     /**
@@ -64,10 +64,8 @@ class Aaguids
      */
     public static function all(): array
     {
-        return static::$labels ??= array_map(
-            static fn (array $entry): string => $entry['name'],
-            static::metadata(),
-        );
+        /** @var array<string, string> */
+        return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
     }
 
     /**
@@ -76,16 +74,19 @@ class Aaguids
     public static function flush(): void
     {
         static::$aaguids = null;
-        static::$labels = null;
+        static::$icons = null;
     }
 
     /**
-     * Get the full AAGUID metadata mapping.
+     * Get all AAGUID to icon mappings.
      *
-     * @return array<string, AaguidEntry>
+     * Icons live in a separate resource file so that resolving a name never loads them.
+     *
+     * @return array<string, array<string, string>>
      */
-    protected static function metadata(): array
+    protected static function icons(): array
     {
-        return static::$aaguids ??= require __DIR__.'/../../resources/aaguids.php';
+        /** @var array<string, array<string, string>> */
+        return static::$icons ??= require __DIR__.'/../../resources/aaguid-icons.php';
     }
 }
