@@ -87,8 +87,9 @@ class Passkey extends Model
     /**
      * Get the light-mode authenticator icon (data URI) based on the AAGUID.
      *
-     * Not included in serialization by default. Opt in via `$passkey->append('authenticator_icon_light')`
-     * or by adding it to `$appends` on a custom model.
+     * Not included in serialization by default. Opt in per instance via
+     * `$passkey->append('authenticator_icon_light')`, or globally by adding it to `$appends`
+     * on a custom model.
      */
     protected function authenticatorIconLight(): Attribute
     {
@@ -98,22 +99,13 @@ class Passkey extends Model
     /**
      * Get the dark-mode authenticator icon (data URI) based on the AAGUID.
      *
-     * Not included in serialization by default. Opt in via `$passkey->append('authenticator_icon_dark')`
-     * or by adding it to `$appends` on a custom model.
+     * Not included in serialization by default. Opt in per instance via
+     * `$passkey->append('authenticator_icon_dark')`, or globally by adding it to `$appends`
+     * on a custom model.
      */
     protected function authenticatorIconDark(): Attribute
     {
         return Attribute::get(fn (): ?string => Aaguids::iconFor($this->resolvedAaguid() ?? '', 'dark'));
-    }
-
-    /**
-     * Load the light and dark authenticator icons so they are included in serialization.
-     *
-     * @return $this
-     */
-    protected function appendAuthenticatorIcons()
-    {
-        return $this->append('authenticator_icon_light', 'authenticator_icon_dark');
     }
 
     /**

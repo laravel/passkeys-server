@@ -247,6 +247,41 @@ class Passkey extends BasePasskey
 }
 ```
 
+### Authenticator Icons
+
+Alongside the `authenticator` name, passkeys expose the authenticator's icon as a `data:` URI in light and dark variants:
+
+```php
+$passkey->authenticator_icon_light;
+$passkey->authenticator_icon_dark;
+```
+
+Both return `null` when the AAGUID is unrecognized or has no icon.
+
+Icons are **not** serialized by default, since the icon data is considerably larger than the name. To include them in `toArray()` / `toJson()`, append them per instance:
+
+```php
+$passkey->append(['authenticator_icon_light', 'authenticator_icon_dark']);
+```
+
+Or on every passkey, by adding them to `$appends` on a [custom model](#custom-passkey-model):
+
+```php
+class Passkey extends BasePasskey
+{
+    protected $appends = ['authenticator', 'authenticator_icon_light', 'authenticator_icon_dark'];
+}
+```
+
+You may also resolve an icon directly from an AAGUID. Icon data is loaded lazily, so resolving a name never loads it:
+
+```php
+use Laravel\Passkeys\Support\Aaguids;
+
+Aaguids::iconFor($aaguid);                 // light by default
+Aaguids::iconFor($aaguid, theme: 'dark');
+```
+
 ### Disable Routes
 
 To register your own routes:
