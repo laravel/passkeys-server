@@ -56,7 +56,7 @@ class StorePasskey
     protected function getResponse(PublicKeyCredential $credential): AuthenticatorAttestationResponse
     {
         if (! $credential->response instanceof AuthenticatorAttestationResponse) {
-            throw InvalidPasskeyException::make('Unable to register passkey. Please try again.');
+            throw InvalidPasskeyException::make(__('Unable to register passkey. Please try again.'));
         }
 
         return $credential->response;
@@ -88,7 +88,7 @@ class StorePasskey
         $exists = Passkeys::passkeyModel()::where('credential_id', $credentialId)->exists();
 
         if ($exists) {
-            throw InvalidPasskeyException::make('Unable to register this passkey.');
+            throw InvalidPasskeyException::make(__('Unable to register this passkey.'));
         }
     }
 
