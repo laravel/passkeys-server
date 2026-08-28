@@ -60,7 +60,21 @@ it('returns the same handle across fresh model instances', function (): void {
     $handle = $user->getPasskeyUserHandle();
 
     expect(User::find($user->id)->getPasskeyUserHandle())->toBe($handle);
-    expect(strlen($handle))->toBe(32);
+    expect(strlen($handle))->toBe(64);
+});
+
+it('derives an ascii-safe user handle', function (): void {
+    config(['passkeys.user_handle_secret' => 'test-secret']);
+
+    $user = User::create([
+        'name' => 'Alex Müller',
+        'email' => 'alex@example.com',
+    ]);
+
+    // Some platforms treat the user handle as UTF-8 text, so raw binary
+    // bytes get corrupted between registration and login. The handle must
+    // stay ASCII while remaining within WebAuthn's 64 byte limit.
+    expect($user->getPasskeyUserHandle())->toMatch('/^[0-9a-f]{64}$/');
 });
 
 it('does not change when non-identifying attributes change', function (): void {
