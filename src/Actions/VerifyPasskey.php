@@ -14,6 +14,7 @@ use Laravel\Passkeys\Support\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\CredentialRecord;
+use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -102,6 +103,8 @@ class VerifyPasskey
 
     /**
      * Validate the credential against the stored passkey.
+     *
+     * @throws InvalidPasskeyException
      */
     protected function validate(
         AuthenticatorAssertionResponse $response,
@@ -113,13 +116,23 @@ class VerifyPasskey
             CredentialRecord::class
         );
 
-        return WebAuthn::assertionValidator()->check(
-            credentialRecord: $source,
-            authenticatorAssertionResponse: $response,
-            publicKeyCredentialRequestOptions: $options,
-            host: Passkeys::relyingPartyId(),
-            userHandle: $source->userHandle,
-        );
+        try {
+            return WebAuthn::assertionValidator()->check(
+                credentialRecord: $source,
+                authenticatorAssertionResponse: $response,
+                publicKeyCredentialRequestOptions: $options,
+                host: Passkeys::relyingPartyId(),
+                userHandle: $source->userHandle,
+            );
+        } catch (InvalidUserHandleException) {
+            // Some platforms corrupt binary user handles by treating them as
+            // UTF-8 text, so the handle returned by the authenticator never
+            // matches the stored one again. Surface a validation error so
+            // the user can re-register the passkey instead of hitting a 500.
+            throw InvalidPasskeyException::make(
+                'This passkey can no longer be used. Please remove it from your account and register a new one.'
+            );
+        }
     }
 
     /**

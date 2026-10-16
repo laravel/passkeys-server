@@ -68,6 +68,7 @@ function createSignedAssertionResponse(
     string $origin,
     int $signCount,
     ?string $rpId = null,
+    ?string $userHandle = null,
 ): AuthenticatorAssertionResponse {
     $clientDataPayload = [
         'type' => 'webauthn.get',
@@ -104,7 +105,7 @@ function createSignedAssertionResponse(
         clientDataJSON: $clientData,
         authenticatorData: $authenticatorData,
         signature: $signature,
-        userHandle: null,
+        userHandle: $userHandle,
     );
 }
 
