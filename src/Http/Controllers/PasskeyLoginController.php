@@ -56,7 +56,7 @@ class PasskeyLoginController extends Controller
         }
 
         if (! Passkeys::allowsLogin($request, $passkey)) {
-            throw InvalidPasskeyException::make('Unable to sign in with this account.');
+            throw InvalidPasskeyException::make(__('Unable to sign in with this account.'));
         }
 
         $guard->login($passkey->user, $request->remember());
