@@ -40,6 +40,12 @@ class PasskeyVerificationRequest extends FormRequest
             'credential.type' => ['required', 'string', 'in:public-key'],
             'credential.response' => ['required', 'array'],
             'remember' => ['boolean'],
+            'credential.authenticatorAttachment' => ['nullable', 'string'],
+            'credential.clientExtensionResults' => ['nullable', 'array'],
+            'credential.response.authenticatorData' => ['nullable', 'string'],
+            'credential.response.clientDataJSON' => ['nullable', 'string'],
+            'credential.response.signature' => ['nullable', 'string'],
+            'credential.response.userHandle' => ['nullable', 'string'],
         ];
     }
 

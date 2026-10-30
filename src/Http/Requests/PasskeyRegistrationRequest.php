@@ -40,6 +40,15 @@ class PasskeyRegistrationRequest extends FormRequest
             'credential.rawId' => ['required', 'string'],
             'credential.type' => ['required', 'string', 'in:public-key'],
             'credential.response' => ['required', 'array'],
+            'credential.authenticatorAttachment' => ['nullable', 'string'],
+            'credential.clientExtensionResults' => ['nullable', 'array'],
+            'credential.response.attestationObject' => ['nullable', 'string'],
+            'credential.response.clientDataJSON' => ['nullable', 'string'],
+            'credential.response.transports' => ['nullable', 'array'],
+            'credential.response.transports.*' => ['nullable', 'string'],
+            'credential.response.publicKeyAlgorithm' => ['nullable', 'numeric'],
+            'credential.response.publicKey' => ['nullable', 'string'],
+            'credential.response.authenticatorData' => ['nullable', 'string'],
         ];
     }
 
