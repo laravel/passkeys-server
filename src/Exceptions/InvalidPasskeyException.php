@@ -10,11 +10,13 @@ class InvalidPasskeyException extends ValidationException
 {
     /**
      * Create a new invalid passkey exception.
+     *
+     * @param  array<array-key, mixed>|string|null  $message
      */
-    public static function make(string $message = 'Unable to register passkey. Please try again.'): static
+    public static function make(array|string|null $message = null): static
     {
         return static::withMessages([
-            'credential' => __($message),
+            'credential' => $message ?? __('Unable to register passkey. Please try again.'),
         ]);
     }
 }
