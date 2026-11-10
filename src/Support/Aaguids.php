@@ -38,6 +38,8 @@ class Aaguids
     /**
      * Get the authenticator icon (data URI) for the given AAGUID.
      *
+     * @param  'light'|'dark'  $theme
+     *
      * @throws InvalidArgumentException
      */
     public static function iconFor(string $aaguid, string $theme = 'light'): ?string
