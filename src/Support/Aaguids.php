@@ -44,7 +44,6 @@ class Aaguids
      */
     public static function iconFor(string $aaguid, string $theme = 'light'): ?string
     {
-        // @phpstan-ignore function.alreadyNarrowedType (the PHPDoc type is not enforced at runtime)
         if (! in_array($theme, ['light', 'dark'], true)) {
             throw new InvalidArgumentException("Unsupported icon theme [{$theme}]. Expected 'light' or 'dark'.");
         }

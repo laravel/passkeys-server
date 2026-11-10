@@ -4,3 +4,10 @@ parameters:
     level: 9
     paths:
         - src
+    ignoreErrors:
+        # The PHPDoc type of $theme is not enforced at runtime. Older PHPStan
+        # releases don't report this, so an unmatched ignore must not fail.
+        -
+            identifier: function.alreadyNarrowedType
+            path: src/Support/Aaguids.php
+            reportUnmatched: false
