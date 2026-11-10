@@ -37,7 +37,9 @@ trait PasskeyAuthenticatable
     /**
      * Get the unique user handle for WebAuthn.
      *
-     * This should be a stable identifier that does not reveal PII.
+     * This should be a stable identifier that does not reveal PII. The
+     * handle is hex encoded because some platforms treat it as UTF-8 text
+     * and corrupt raw binary bytes, which breaks subsequent logins.
      */
     public function getPasskeyUserHandle(): string
     {
@@ -45,7 +47,6 @@ trait PasskeyAuthenticatable
             'sha256',
             $this->getTable().'|'.$this->getKey(),
             Config::string('passkeys.user_handle_secret'),
-            binary: true,
         );
     }
 
