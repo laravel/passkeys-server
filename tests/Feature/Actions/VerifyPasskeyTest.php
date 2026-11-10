@@ -206,3 +206,30 @@ it('rejects an assertion whose user handle no longer matches the stored credenti
 
     app(VerifyPasskey::class)($assertion, $options);
 })->throws(InvalidPasskeyException::class, 'This passkey can no longer be used');
+
+it('rejects an assertion signed for a different challenge', function (): void {
+    config()->set('passkeys.allowed_origins', ['https://localhost']);
+    config()->set('passkeys.relying_party_id', 'localhost');
+
+    $user = User::create(['name' => 'John Doe', 'email' => 'john@example.com']);
+    $credentialId = random_bytes(16);
+
+    $user->passkeys()->create([
+        'name' => 'My MacBook',
+        'credential_id' => Base64UrlSafe::encodeUnpadded($credentialId),
+        'credential' => json_decode(WebAuthn::toJson(createCredentialSource($user->getPasskeyUserHandle(), $credentialId)), true),
+    ]);
+
+    // Starting a login in a second tab replaces the options in the session,
+    // so the first tab's assertion carries a challenge the server no longer expects.
+    $options = createRequestOptions();
+    $staleOptions = createRequestOptions();
+
+    $assertion = PublicKeyCredential::create(
+        type: 'public-key',
+        rawId: $credentialId,
+        response: createSignedAssertionResponse($staleOptions->challenge, 'https://localhost', signCount: 1, rpId: 'localhost'),
+    );
+
+    app(VerifyPasskey::class)($assertion, $options);
+})->throws(InvalidPasskeyException::class, 'Unable to verify passkey');
