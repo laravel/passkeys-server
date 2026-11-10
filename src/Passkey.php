@@ -25,6 +25,8 @@ use Laravel\Passkeys\Support\Aaguids;
  * @property Carbon|null $updated_at
  * @property-read PasskeyUser $user
  * @property-read string|null $authenticator
+ * @property-read string|null $authenticator_icon_light
+ * @property-read string|null $authenticator_icon_dark
  */
 class Passkey extends Model
 {
@@ -79,14 +81,44 @@ class Passkey extends Model
      */
     protected function authenticator(): Attribute
     {
-        return Attribute::get(function (): ?string {
-            $aaguid = $this->credential['aaguid'] ?? null;
+        return Attribute::get(fn (): ?string => Aaguids::labelFor($this->resolvedAaguid() ?? ''));
+    }
 
-            if (! is_string($aaguid) || $aaguid === Aaguids::unknown()) {
-                return null;
-            }
+    /**
+     * Get the light-mode authenticator icon (data URI) based on the AAGUID.
+     *
+     * Not included in serialization by default. Opt in per instance via
+     * `$passkey->append('authenticator_icon_light')`, or globally by adding it to `$appends`
+     * on a custom model.
+     */
+    protected function authenticatorIconLight(): Attribute
+    {
+        return Attribute::get(fn (): ?string => Aaguids::iconFor($this->resolvedAaguid() ?? '', 'light'));
+    }
 
-            return Aaguids::labelFor($aaguid);
-        });
+    /**
+     * Get the dark-mode authenticator icon (data URI) based on the AAGUID.
+     *
+     * Not included in serialization by default. Opt in per instance via
+     * `$passkey->append('authenticator_icon_dark')`, or globally by adding it to `$appends`
+     * on a custom model.
+     */
+    protected function authenticatorIconDark(): Attribute
+    {
+        return Attribute::get(fn (): ?string => Aaguids::iconFor($this->resolvedAaguid() ?? '', 'dark'));
+    }
+
+    /**
+     * Get the AAGUID stored on the credential, ignoring the unknown sentinel.
+     */
+    protected function resolvedAaguid(): ?string
+    {
+        $aaguid = $this->credential['aaguid'] ?? null;
+
+        if (! is_string($aaguid) || $aaguid === Aaguids::unknown()) {
+            return null;
+        }
+
+        return $aaguid;
     }
 }
