@@ -15,6 +15,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\CredentialRecord;
 use Webauthn\Exception\InvalidUserHandleException;
+use Webauthn\Exception\WebauthnException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -132,6 +133,8 @@ class VerifyPasskey
             throw InvalidPasskeyException::make(
                 'This passkey can no longer be used. Please remove it from your account and register a new one.'
             );
+        } catch (WebauthnException) {
+            throw InvalidPasskeyException::make('Unable to verify passkey. Please try again.');
         }
     }
 
