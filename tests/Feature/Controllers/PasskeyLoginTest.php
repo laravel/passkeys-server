@@ -86,14 +86,12 @@ it('returns validation errors for empty attributes', function (): void {
                 'type' => '',
                 'response' => '',
             ],
-            'remember' => '',
         ])
         ->assertInvalid([
             'credential.id',
             'credential.rawId',
             'credential.type',
             'credential.response',
-            'remember',
         ]);
 
     $this->assertGuest();
