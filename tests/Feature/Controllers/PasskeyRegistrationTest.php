@@ -124,11 +124,15 @@ it('returns validation error when passkey is invalid', function (): void {
         ->assertJsonValidationErrors(['credential']);
 });
 
-it('returns validation errors for invalid attributes', function (): void {
+it('returns validation errors for empty attributes', function (): void {
     $user = User::create([
         'name' => 'Test User',
         'email' => 'test@example.com',
     ]);
+
+    $this->mock(StorePasskey::class, fn ($mock) => $mock
+        ->shouldNotReceive('__invoke')
+    );
 
     $this->actingAs($user)
         ->withSession(['auth.password_confirmed_at' => time()])
@@ -140,6 +144,37 @@ it('returns validation errors for invalid attributes', function (): void {
                 'rawId' => '',
                 'type' => '',
                 'response' => '',
+            ],
+        ])
+        ->assertInvalid([
+            'name',
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+        ]);
+});
+
+it('returns validation errors for invalid attributes', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->mock(StorePasskey::class, fn ($mock) => $mock
+        ->shouldNotReceive('__invoke')
+    );
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->withSession(['passkey.registration_options' => 'serialized-options'])
+        ->postJson('/user/passkeys', [
+            'name' => ['test'],
+            'credential' => [
+                'id' => ['test'],
+                'rawId' => ['test'],
+                'type' => 'invalid-type',
+                'response' => 'string',
             ],
         ])
         ->assertInvalid([
