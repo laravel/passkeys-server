@@ -76,3 +76,45 @@ it('returns validation error when session has expired', function (): void {
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['credential']);
 });
+
+it('returns validation errors for empty attributes', function (): void {
+    $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
+        ->postJson('/passkeys/login', [
+            'credential' => [
+                'id' => '',
+                'rawId' => '',
+                'type' => '',
+                'response' => '',
+            ],
+        ])
+        ->assertInvalid([
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+        ]);
+
+    $this->assertGuest();
+});
+
+it('returns validation errors for invalid attributes', function (): void {
+    $this->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
+        ->postJson('/passkeys/login', [
+            'credential' => [
+                'id' => ['test'],
+                'rawId' => ['test'],
+                'type' => 'invalid-type',
+                'response' => 'string',
+            ],
+            'remember' => 'string',
+        ])
+        ->assertInvalid([
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+            'remember',
+        ]);
+
+    $this->assertGuest();
+});

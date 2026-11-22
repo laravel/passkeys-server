@@ -124,6 +124,68 @@ it('returns validation error when passkey is invalid', function (): void {
         ->assertJsonValidationErrors(['credential']);
 });
 
+it('returns validation errors for empty attributes', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->mock(StorePasskey::class, fn ($mock) => $mock
+        ->shouldNotReceive('__invoke')
+    );
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->withSession(['passkey.registration_options' => 'serialized-options'])
+        ->postJson('/user/passkeys', [
+            'name' => '',
+            'credential' => [
+                'id' => '',
+                'rawId' => '',
+                'type' => '',
+                'response' => '',
+            ],
+        ])
+        ->assertInvalid([
+            'name',
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+        ]);
+});
+
+it('returns validation errors for invalid attributes', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->mock(StorePasskey::class, fn ($mock) => $mock
+        ->shouldNotReceive('__invoke')
+    );
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->withSession(['passkey.registration_options' => 'serialized-options'])
+        ->postJson('/user/passkeys', [
+            'name' => ['test'],
+            'credential' => [
+                'id' => ['test'],
+                'rawId' => ['test'],
+                'type' => 'invalid-type',
+                'response' => 'string',
+            ],
+        ])
+        ->assertInvalid([
+            'name',
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+        ]);
+});
+
 it('returns validation error when session has expired', function (): void {
     $user = User::create([
         'name' => 'Test User',
@@ -170,6 +232,17 @@ it('requires password confirmation to store a passkey', function (): void {
 it('requires authentication to delete a passkey', function (): void {
     $this->deleteJson('/user/passkeys/1')
         ->assertUnauthorized();
+});
+
+it('returns not found when trying to delete a non-existing passkey', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->deleteJson('/user/passkeys/1')
+        ->assertNotFound();
 });
 
 it('deletes a passkey for the authenticated user', function (): void {
