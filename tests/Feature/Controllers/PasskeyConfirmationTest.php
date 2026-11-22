@@ -81,6 +81,32 @@ it('returns validation error when passkey confirmation is invalid', function ():
     $this->assertAuthenticatedAs($user);
 });
 
+it('returns validation errors for invalid attributes', function (): void {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['passkey.verification_options' => WebAuthn::toJson(createRequestOptions())])
+        ->postJson('/passkeys/confirm', [
+            'credential' => [
+                'id' => '',
+                'rawId' => '',
+                'type' => '',
+                'response' => '',
+            ],
+            'remember' => '',
+        ])
+        ->assertInvalid([
+            'credential.id',
+            'credential.rawId',
+            'credential.type',
+            'credential.response',
+            'remember',
+        ]);
+});
+
 it('marks the password as confirmed when passkey confirmation succeeds', function (): void {
     $user = User::create([
         'name' => 'Test User',
