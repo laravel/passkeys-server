@@ -1,5 +1,8 @@
 <?php
 
+use CBOR\ByteStringObject;
+use CBOR\MapObject;
+use CBOR\TextStringObject;
 use Illuminate\Support\Facades\Route;
 use Laravel\Passkeys\Actions\StorePasskey;
 use Laravel\Passkeys\Exceptions\InvalidPasskeyException;
@@ -7,6 +10,8 @@ use Laravel\Passkeys\Passkey;
 use Laravel\Passkeys\Passkeys;
 use Laravel\Passkeys\PasskeysServiceProvider;
 use Laravel\Passkeys\Tests\User;
+use ParagonIE\ConstantTime\Base64UrlSafe;
+use Webauthn\AuthenticatorData;
 
 afterEach(function (): void {
     Passkeys::usePasskeyModel(Passkey::class);
@@ -122,6 +127,59 @@ it('returns validation error when passkey is invalid', function (): void {
         ])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['credential']);
+});
+
+it('returns validation error when the attestation does not answer the registration options', function (): void {
+    config()->set('passkeys.allowed_origins', ['https://localhost']);
+    config()->set('passkeys.relying_party_id', 'localhost');
+
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->getJson('/user/passkeys/options')
+        ->assertOk();
+
+    // A well-formed attestation whose challenge is not the one stored in the session.
+    $clientDataJson = json_encode([
+        'type' => 'webauthn.create',
+        'challenge' => Base64UrlSafe::encodeUnpadded(random_bytes(32)),
+        'origin' => 'https://localhost',
+    ]);
+
+    $credentialId = random_bytes(16);
+    $authData = hash('sha256', 'localhost', binary: true)
+        .chr(AuthenticatorData::FLAG_UP | AuthenticatorData::FLAG_AT)
+        .pack('N', 0)
+        .str_repeat("\0", 16)
+        .pack('n', strlen($credentialId))
+        .$credentialId
+        .fixtureEcKeypair()['cose_public_key'];
+
+    $attestationObject = (string) MapObject::create()
+        ->add(TextStringObject::create('fmt'), TextStringObject::create('none'))
+        ->add(TextStringObject::create('attStmt'), MapObject::create())
+        ->add(TextStringObject::create('authData'), ByteStringObject::create($authData));
+
+    $this->postJson('/user/passkeys', [
+        'name' => 'My Passkey',
+        'credential' => [
+            'id' => Base64UrlSafe::encodeUnpadded($credentialId),
+            'rawId' => Base64UrlSafe::encodeUnpadded($credentialId),
+            'type' => 'public-key',
+            'response' => [
+                'clientDataJSON' => Base64UrlSafe::encodeUnpadded($clientDataJson),
+                'attestationObject' => Base64UrlSafe::encodeUnpadded($attestationObject),
+            ],
+        ],
+    ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['credential' => 'Unable to register passkey. Please try again.']);
+
+    expect($user->passkeys()->count())->toBe(0);
 });
 
 it('returns validation error when session has expired', function (): void {
